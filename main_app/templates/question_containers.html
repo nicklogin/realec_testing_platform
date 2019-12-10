@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+{% load static %}
+<html>
+    <head>
+        <script>
+            var submitAnswers = function() {
+                document.getElementById("answerForm").submit()
+            };
+        </script>
+        <link href="{% static "basic.css" %}" rel="stylesheet" />
+    </head>
+    <body>
+        <div class="main">
+            <div class="mainarea">
+                <div class="navbar">
+                    <li><a href="/quizzes">Quizzes</a></li>
+                    <li><a href="/grades">Grades</a></li>
+                    <li><a href="/questions">Questions</a></li>
+                    <li><a href="/users">Users</a></li>
+                    <li><a href="/IELTS">IELTS</a></li>
+                    <li><a href="/login">Log Out</a></li>
+                </div>
+                <div>
+                    Listening:<br />
+                    Editable container:<br />
+                    <div class="listening">
+                        <h2> Listening section: </h2><br />
+                        Section name: <textarea></textarea><br />
+                        Section text:<br />
+                        <textarea rows="10" cols="50"></textarea>
+                        <button> Upload Audio </button> <button> Add question </button>
+                        <select name="qType">
+                            <option value="gapFill">Gap fill</option>
+                            <option value="seqMatch">Sequence matching</option>
+                            <option value="mChoice">Multiple choice</option>
+                            <option value="mmChoice">Multiple choice (Multiple values)</option>
+                            <option value="TF">True/False</option>
+                            <option value="TFNG">True/False/Not Given</option>
+                        </select>
+                    </div><br />
+                    Displayed container:<br />
+                    <div></div><br />
+                    
+                    Reading:<br />
+                    Editable container:<br />
+                    <div class="listening">
+                        <h2> Listening section: </h2><br />
+                        Section name: <textarea></textarea><br />
+                        Section text:<br />
+                        <textarea rows="10" cols="50"></textarea>
+                        <button> Upload PDF </button> <button> Add question </button>
+                        <select name="qType">
+                            <option value="gapFill">Gap fill</option>
+                            <option value="seqMatch">Sequence matching</option>
+                            <option value="mChoice">Multiple choice</option>
+                            <option value="mmChoice">Multiple choice (Multiple values)</option>
+                            <option value="TF">True/False</option>
+                            <option value="TFNG">True/False/Not Given</option>
+                        </select>
+                    </div>
+                    <br />
+                    Displayed container:<br />
+                    <div></div>
+                    <br />
+                    
+                    Writing:<br />
+                    Editable container:<br />
+                    <div class="listening">
+                        <h2> Listening section: </h2><br />
+                        Section name: <textarea></textarea><br />
+                        Section text:<br />
+                        <textarea rows="10" cols="50"></textarea>
+                        <button> Upload Image </button> <button> Add question </button>
+                        <select name="qType">
+                            <option value="gapFill">Gap fill</option>
+                            <option value="seqMatch">Sequence matching</option>
+                            <option value="mChoice">Multiple choice</option>
+                            <option value="mmChoice">Multiple choice (Multiple values)</option>
+                            <option value="TF">True/False</option>
+                            <option value="TFNG">True/False/Not Given</option>
+                        </select>
+                    </div>
+                    <br />
+                    Displayed container:<br />
+                    <div></div><br />
+                    
+                    gap fill:<br />
+                    Editable container:<br />
+                    <div></div><br />
+                    Displayed container:<br />
+                    <div></div><br />
+                    
+                    matching:<br />
+                    Editable container:<br />
+                    <div></div><br />
+                    Displayed container:<br />
+                    <div></div><br />
+                    
+                    Multiple choice:<br />
+                    Editable container:<br />
+                    <div></div><br />
+                    Displayed container:<br />
+                    <div></div><br />
+                    
+                    Multiple choice (with multiple answers):<br />
+                    Editable container:<br />
+                    <div></div><br />
+                    Displayed container:<br />
+                    <div></div><br />
+                </div>
+            </div>
+        </div>
+    </body>
+</html>

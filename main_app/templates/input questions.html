@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+{% load static %}
+<html>
+    <head>
+        <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.7/jquery.js"></script> 
+        <script type="text/javascript" src="http://js.nicedit.com/nicEdit-latest.js"></script>
+        <script type="text/javascript" src="{% static "question_editor.js" %}"></script>
+        <script>
+            bkLib.onDomLoaded(function() { nicEditors.allTextAreas() });
+        </script>
+        <link href="{% static "basic.css" %}" rel="stylesheet" />
+    </head>
+    <body>
+        <div class = "main">
+            <div class="mainarea">
+                <div class="navbar">
+                    <li><a href="/quizzes">Quizzes</a></li>
+                    <li><a href="/grades">Grades</a></li>
+                    <li><a href="/questions">Questions</a></li>
+                    <li><a href="/users">Users</a></li>
+                    <li><a href="/IELTS">IELTS</a></li>
+                    <li><a href="/login">Log Out</a></li>
+                    <div class="instruction">
+                        <li> You can edit questions and right answers in text areas here</li>
+                        <li> To delete question from quiz tick the box "Delete this question from quiz"</li>
+                        <li> To delete answer from the set of right answers tick the box "Delete this answer from question"</li>
+                        <li> To add one more right answer to question click "Add another right answer" after last answer</li>
+                        <li> If you want to discard changes you've made to a question or an answer click "Restore to default"</li>
+                        <li> You can select whether answers submitted for this quiz should be stripped from punctuation</li>
+                        <li> When you're done click "Save changes". You won't be able to discard changes you've made after that.</li>
+                    </div>
+                </div>
+                <div>
+                    <button type="button" onclick="addSection()"> Add question section </button>
+                    <select name="sectionType">
+                        <option name="Listening">Listening</option>
+                        <option name="Writing">Writing</option>
+                        <option name="Reading">Reading</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+    </body>
+</html>

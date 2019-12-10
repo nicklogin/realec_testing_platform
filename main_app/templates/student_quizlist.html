@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+{% load static %}
+<html>
+    <head>
+        <link href="{% static "basic.css" %}" rel="stylesheet" />
+    </head>
+    <body>
+        <div class = "main">
+            <div class="mainarea">
+                <div class="navbar">
+                    <ul>
+                        <li><a href="/quizzes">Quizzes</a></li>
+                        <li><a href="/grades">Grades</a></li>
+                        <li><a href="/questions">Questions</a></li>
+                        <li><a href="/users">Users</a></li>
+                        <li><a href="/IELTS">IELTS</a></li>
+                        <li><a href="/login">Log Out</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h1> Available quizzes </h1>
+                    <ul>
+                        {% for quiz in quizlist %}
+                            <li> <b>Quiz "{{ quiz.0 }}"</b> <a href="/takeQuiz/{{ quiz.1 }}">Take quiz</a> </li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </body>
+</html>

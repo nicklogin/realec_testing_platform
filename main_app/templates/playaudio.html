@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <script>
+            window.onload = function() {
+                aud_input = document.getElementById("aud_input");
+                img_input = document.getElementById("img_input");
+                pdf_input = document.getElementById("pdf_input");
+
+                aud_preview = function(e){
+                    var sound = document.getElementById('sound');
+                    sound.src = URL.createObjectURL(this.files[0]);
+                    // not really needed in this exact case, but since it is really important in other cases,
+                    // don't forget to revoke the blobURI when you don't need it
+                    sound.onend = function(e) {
+                        URL.revokeObjectURL(this.src);
+                    }
+                };
+
+                img_preview = function(e){
+                    var img = document.getElementById('img');
+                    img.src = URL.createObjectURL(this.files[0]);
+                };
+
+                pdf_preview = function(e){
+                    var book = document.getElementById('book');
+                    book.src = URL.createObjectURL(this.files[0]);
+                };
+
+                aud_input.onchange = aud_preview;
+                img_input.onchange = img_preview;
+                pdf_input.onchange = pdf_preview;
+            };
+        </script>
+    </head>
+    <body>
+        <form method="POST" enctype="multipart/form-data">
+            {% csrf_token %}
+            Audio Upload:
+            <input type="file" name="audio_upload" id="aud_input">
+            </input>
+            <audio id="sound" controls>
+            </audio>
+            <br />
+            <br />
+            Image upload:
+            <input type="file" name="img_upload" id="img_input">
+            </input>
+            <image id="img" controls>
+            </image>
+            <br />
+            <br />
+            PDF upload:
+            <input type="file" name="pdf_upload" id="pdf_input">
+            </input>
+            <embed id="book" type="application/pdf" style="height: 640 px; width: 480px;" controls>
+            </embed>
+            <br />
+            <br />
+            <input type="submit" value="Upload files">
+        </form>
+    </body>
+</html>

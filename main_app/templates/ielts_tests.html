@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+{% load static %}
+<html>
+    <head>
+        <link href="{% static "basic.css" %}" rel="stylesheet" />
+    </head>
+    <body>
+        <div class = "main">
+            <div class="mainarea">
+                <div class="navbar">
+                    <ul>
+                        <li><a href="/quizzes">Quizzes</a></li>
+                        <li><a href="/grades">Grades</a></li>
+                        <li><a href="/questions">Questions</a></li>
+                        <li><a href="/users">Users</a></li>
+                        <li><a href="/IELTS">IELTS</a></li>
+                        <li><a href="/login">Log Out</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h1> Available IELTS tests </h1>
+                    <ul>
+                        {% if student %}
+                        {% for quiz in quizlist %}
+                            <li> <b>Quiz "{{ quiz.0 }}"</b> <a href="/takeIELTSTest/{{ quiz.1 }}"> Take test</a> </li>
+                        {% endfor %}
+                        {% else %}
+                            {% for quiz in quizlist %}
+                                <li> <b>Quiz "{{ quiz.0 }}"</b> <a href="/editIELTS/{{ quiz.1 }}"> Edit</a> <a href="/takeIELTSTest/{{ quiz.1 }}"> Preview</a>
+                                <a href="/IELTSgrades/{{ quiz.1 }}"> Results</a>
+                                    </li>
+                            {% endfor %}
+                        {% endif %}
+                    </ul>
+                    <a href="/editIELTS/">Add new</a>
+                </div>
+            </div>
+        </div>
+    </body>
+</html>

@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+{% load static %}
+<html>
+    <head>
+        <link href="{% static "basic.css" %}" rel="stylesheet" />
+        <script>
+            // Taken from https://stackoverflow.com/a/27547021
+
+            var expanded = false;
+
+            var expanded1 = false;
+
+            var showCheckboxes = function() {
+                var checkboxes = document.getElementById("checkboxes");
+                if (!expanded) {
+                    checkboxes.style.display = "block";
+                    expanded = true;
+                } else {
+                    checkboxes.style.display = "none";
+                    expanded = false;
+                }
+            }
+
+            var showFolderCheckboxes = function() {
+                var checkboxes = document.getElementById("folderCheckboxes");
+                if (!expanded1) {
+                    checkboxes.style.display = "block";
+                    expanded1 = true;
+                } else {
+                    checkboxes.style.display = "none";
+                    expanded1 = false;
+                }
+            }
+
+            var applyFilter = function() {
+                document.getElementById("tagFolderSelector").submit();
+            }
+
+            var createNewQuiz = function() {
+                document.getElementById("questionsToInclude").submit();
+            }
+
+            var selectAllTags = function() {
+                var boxes = document.getElementById("checkboxes").children;
+                for (var i=0; i<boxes.length; i++) {
+                    if (boxes[i].tagName.toLowerCase() == "input"){
+                        boxes[i].checked = true;
+                    }
+                }
+            }
+
+            var unselectAllTags = function() {
+                var boxes = document.getElementById("checkboxes").children;
+                for (var i=0; i<boxes.length; i++) {
+                    if (boxes[i].tagName.toLowerCase() == "input"){
+                        boxes[i].checked = false;
+                    }
+                }
+            }
+
+            var selectAllFolders = function() {
+                var boxes = document.getElementById("folderCheckboxes").children;
+                for (var i=0; i<boxes.length; i++) {
+                    if (boxes[i].tagName.toLowerCase() == "input"){
+                        boxes[i].checked = true;
+                    }
+                }
+            }
+
+            var unselectAllFolders = function() {
+                var boxes = document.getElementById("folderCheckboxes").children;
+                for (var i=0; i<boxes.length; i++) {
+                    if (boxes[i].tagName.toLowerCase() == "input"){
+                        boxes[i].checked = false;
+                    }
+                }
+            }
+
+            var createNewFolder = function() {
+                document.getElementById("itemType").value = "folder";
+                document.getElementById("questionsToInclude").submit();
+            }
+
+            // var selectTag = function(tag) {
+            //     if (tag != "") {
+            //         location.replace("/questions/"+tag)
+            //     } else {
+            //         location.replace("/questions/")
+            //     }
+            // }
+        </script>
+    </head>
+    <body>
+        <div class="main">
+            <div class="mainarea">
+                <div class="navbar">
+                    <li><a href="/quizzes">Quizzes</a></li>
+                    <li><a href="/grades">Grades</a></li>
+                    <li><a href="/questions">Questions</a></li>
+                    <li><a href="/users">Users</a></li>
+                    <li><a href="/IELTS">IELTS</a></li>
+                    <li><a href="/login">Log Out</a></li>
+                    <div class="instruction">
+                        To create new quiz:
+                        <li> Select an error tag for questions you want to include </li>
+                        <li> Tick the boxes for questions you want to include in quiz </li>
+                        <li> Type the name of the new quiz in the textbox below </li>
+                        <li> Tick the box if you want to strip answers submitted for this quiz from punctuation </li>
+                        <li> Click "Create quiz" to create quiz with selected questions </li>
+                    </div>
+                </div>
+                <div>
+                    {% autoescape off %}
+                        <form id="tagFolderSelector" method="POST">
+                        <div class="threeCols">
+                            <div>
+                                <div class="multiselect">
+                                    {% csrf_token %}
+                                    <select name="filter" onclick="showCheckboxes()">
+                                        <option value="y" selected hidden> Select error tag from REALEC </option>
+                                    </select>
+                                    <div class="checkboxes" id="checkboxes">
+                                        <!-- err_tags - список элементов типа (выбран ли тег(bool), краткое название тега(str), полное название тега(str)) -->
+                                        <a class="fakeLink" onclick="selectAllTags()"> Select all </a><br />
+                                        <a class="fakeLink" onclick="unselectAllTags()"> Unselect all </a><br />
+                                        {% for err_tag in err_tags %}
+                                            {% if err_tag.0 %}
+                                                <input type="checkbox" name="tag_{{ err_tag.1 }}"" checked="checked"> {{ err_tag.2 }} <br />
+                                            {% else %}
+                                                <input type="checkbox" name="tag_{{ err_tag.1 }}"> {{ err_tag.2 }} <br />
+                                            {% endif %}
+                                        {% endfor %}
+                                    </div>
+                                </div>
+                            </div>
+                            <div>
+                                <div class="multiselect">
+                                    <select name="filter1" onclick="showFolderCheckboxes()">
+                                        <option value="y" selected hidden> Select folder </option>
+                                    </select>
+                                    <div class="checkboxes" id="folderCheckboxes">
+                                        <!-- folders - список элементов типа (выбрана ли папка(bool), id папки(int), полное название папки(str)) -->
+                                        <a class="fakeLink" onclick="selectAllFolders()"> Select all </a><br />
+                                        <a class="fakeLink" onclick="unselectAllFolders()"> Unselect all </a><br />
+                                        <!-- <input type="checkbox" name="folder_None" checked="checked"> None <br /> -->
+                                        {% for folder in folders %}
+                                            {% if folder.0 %}
+                                                <input type="checkbox" name="folder_{{ folder.1 }}"" checked="checked"> {{ folder.2 }} <br />
+                                            {% else %}
+                                                <input type="checkbox" name="folder_{{ folder.1 }}"> {{ folder.2 }} <br />
+                                            {% endif %}
+                                        {% endfor %}
+                                    </div>
+                                </div>
+                            </div>
+                            <div>
+                                <button onclick="applyFilter()"> Apply tag and folder filter </button>
+                            </div>
+                        </div>
+                        </form>
+                        <br />
+                        <form id="questionsToInclude" method="POST" class="scrollbox">
+                            {% csrf_token %}
+                            <input type="hidden" id="itemType" name="item" value="quiz" />
+                            <!--Здесь много чекбоксов, где показаны каждый вопрос и правильные ответы к нему -->
+                            {% for question in questions %}
+                                <input type="checkbox" name="{{ question.0 }}">{{ question.0}}. {{ question.1 }} </input> <br />
+                            {% endfor %}
+                            <!-- Quiz name: <input type="text" name="quizName"> <br /><br />
+                            <input type="submit" value="Save quiz"> <br /><br /> -->
+                        </form>
+                    {% endautoescape %}
+                    <div class="equalCols">
+                        <div>
+                            Quiz name: <textarea name="quizName" cols="30" rows="1" form="questionsToInclude"></textarea><br />
+                            <button onclick="createNewQuiz()">Create quiz</button> <input type="checkbox" form="questionsToInclude" name="strip_answers" checked="checked"> Strip punctuation and parenthesis from submitted answers</input>
+                        </div>
+                        <div>
+                            Folder name: <textarea name="folderName" cols="30" rows="1" form="questionsToInclude"></textarea><br />
+                            <button onclick="createNewFolder()">Create folder</button> 
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </body>
+</html>

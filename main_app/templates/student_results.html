@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+{% load static %}
+<html>
+    <head>
+        <link href="{% static "basic.css" %}" rel="stylesheet" />
+    </head>
+    <body>
+        <div class = "main">
+            <div class="mainarea">
+                <div class="navbar">
+                    <ul>
+                        <li><a href="/quizzes">Quizzes</a></li>
+                        <li><a href="/grades">Grades</a></li>
+                        <li><a href="/questions">Questions</a></li>
+                        <li><a href="/users">Users</a></li>
+                        <li><a href="/IELTS">IELTS</a></li>
+                        <li><a href="/login">Log Out</a></li>
+                    </ul>
+                </div>
+                <div>
+                    {% autoescape off %}
+                    <h1> Results of {{ student_name }} in {{ quiz_name }}</h1>
+                    <b>Download:</b>  <a href="{{ download_url }}">Excel file</a><br /><br />
+                    <form method="POST" id="editForm">
+                        {% csrf_token %}
+                        <table>
+                            <tr>
+                                <th> Question </th>
+                                <th> Submitted answer </th>
+                                <th> Correct answers </th>
+                                <th> Mark </th>
+                                <th> Fraction of correct answers</th>
+                            </tr>
+                            {% for entry in student_answers %}
+                            <tr>
+                                <td> {{ entry.2 }} </td>
+                                <td> {{ entry.3 }} <br />
+                                <input type="checkbox" name="addRight_{{ entry.1 }}_{{ entry.0 }}" /> Mark as new correct</td>
+                                <td> {{ entry.5 }} </td>
+                                <td> <input type="text" name="mark_{{ entry.0 }}" value="{{ entry.4 }}"> </td>
+                                <td> {{ entry.6 }} </td>
+                            </tr>
+                            {% endfor %}
+                        </table><br />
+                        <input type="submit" value="Save changes"/>
+                    </form>
+                    {% endautoescape %}
+                </div>
+            </div>
+        </div>
+    </body>
+</html>

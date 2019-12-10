@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+{% load static %}
+<html>
+    <head>
+        <script>
+            var submitAnswers = function() {
+                document.getElementById("answerForm").submit()
+            };
+        </script>
+        <link href="{% static "basic.css" %}" rel="stylesheet" />
+    </head>
+    <body>
+        <div class="main">
+            <div class="mainarea">
+                <div class="navbar">
+                    <li><a href="/quizzes">Quizzes</a></li>
+                    <li><a href="/grades">Grades</a></li>
+                    <li><a href="/questions">Questions</a></li>
+                    <li><a href="/users">Users</a></li>
+                    <li><a href="/IELTS">IELTS</a></li>
+                    <li><a href="/login">Log Out</a></li>
+                </div>
+                <div>
+                    {% autoescape off %}
+                        <form id="answerForm" method="POST">
+                            {% csrf_token %}
+                            <input type="hidden" name="quiz_id" value="{{ quiz_id }}">
+                            {% for question in questions %}
+                                <b>Question {{ question.0 }}.</b> <br />
+                                {{ question.1.1.0 }} <textarea cols="80" rows="1" name="question_{{ question.1.0 }}"></textarea> {{ question.1.1.1 }} <br />
+                                <!-- <b>Your answer:</b> <br /> <br /> -->
+                            {% endfor %}
+                        </form>
+                        <button onclick="submitAnswers()">Submit answers</button>
+                    {% endautoescape %}
+                </div>
+            </div>
+        </div>
+    </body>
+</html>
