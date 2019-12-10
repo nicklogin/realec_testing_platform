@@ -20,9 +20,6 @@ https://docs.djangoproject.com/en/2.1/intro/
 дать ему доступ на все опреации ко всем базам.
 
 
-Пользовател нужно создавать с нативным паролем MySQL, это делается так:
-CREATE USER 'PlatformAdmin'@'localhost' IDENTIFIED WITH mysql_native_password BY 'rnY79gbE43!';
-
 Можно восстановить данные базы из дампа (файл db_dump.json), чтобы все работали с одними и теми же данными:
 
 python manage.py loaddata --exclude auth.permission --exclude contenttypes db_dump.json
