@@ -1,5 +1,6 @@
 import sys, codecs, re, os, traceback
 from collections import defaultdict, OrderedDict
+from datetime import datetime
 import shutil
 import random
 import json, csv
@@ -177,6 +178,13 @@ grammar tags:
 		Tautology
 		Absence_explanation
 """
+
+def get_fname_time():
+    dt = datetime.now()
+    str_date = str(dt.date()).replace('-', '_').strip()
+    str_time = str(dt.time()).replace(':','_').replace('.', '').strip()
+    return str_date+'_'+str_time
+
 def sent_tokenize_function(s):
     sents = []
     sent = ''
@@ -1285,9 +1293,11 @@ def test_with_relations():
 
 def download_folder_and_make_exercises(folder_name, output_path=None, maintain_log=False,
  error_types=[], context=True, make_two_variants=True, file_output=True, moodle_output=True, check_duplicates=True,
- keep_processed=False):
+ keep_processed=False,
+ path_to_downloaded='downloaded_'+get_fname_time(),
+ delete_downloaded=False):
     r = realec_helper.realecHelper()
-    r.download_folder(folder_name)
+    r.download_folder(folder_name, path_to_saved_folder=path_to_downloaded)
     if check_duplicates:
         all_texts = set()
         for root, dirs, files in os.walk(r.path):
@@ -1318,6 +1328,8 @@ def download_folder_and_make_exercises(folder_name, output_path=None, maintain_l
         return e.output_file_names
     else:
         return e.output_objects
+    if delete_downloaded:
+        os.rmdir(path_to_downloaded)
 
 if __name__ == '__main__':
     console_user_interface()

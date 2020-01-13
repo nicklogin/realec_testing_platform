@@ -21,7 +21,8 @@ grid-column-gap: 5px;}
 }
 
 .scrollbox {
-height:500px;
+/* height:500px; */
+height: 600px;
 overflow-x:scroll;
 }
 .instruction {
@@ -87,6 +88,7 @@ th, td {
 }
 
 .section {
+    width: 100%;
     background-color: beige;
     border-radius: 4px;
     border: 1px solid black;
@@ -99,11 +101,13 @@ th, td {
 }
 
 .myTextArea{
+    width: 100%;
     max-height: 400px;
     resize: none;
 }
 
 .section-text{
+    width: 100%;
     background-color: white;
     height: 640px;
     overflow: scroll;

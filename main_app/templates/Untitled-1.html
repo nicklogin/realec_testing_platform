@@ -1,9 +1,4 @@
-<!DOCTYPE html>
-{% load static %}
-<html>
-    <head>
-        <link href="{% static "basic.css" %}" rel="stylesheet" />
-        <script>
+<script>
             // Taken from https://stackoverflow.com/a/27547021
 
             var expanded = false;
@@ -89,27 +84,8 @@
             //     }
             // }
         </script>
-    </head>
-    <body>
-        <div class="main">
-            <div class="mainarea">
-                <div class="navbar">
-                    <li><a href="/quizzes">Quizzes</a></li>
-                    <li><a href="/grades">Grades</a></li>
-                    <li><a href="/questions">Questions</a></li>
-                    <li><a href="/users">Users</a></li>
-                    <li><a href="/IELTS">IELTS</a></li>
-                    <li><a href="/login">Log Out</a></li>
-                    <div class="instruction">
-                        To create new quiz:
-                        <li> Select an error tag for questions you want to include </li>
-                        <li> Tick the boxes for questions you want to include in quiz </li>
-                        <li> Type the name of the new quiz in the textbox below </li>
-                        <li> Tick the box if you want to strip answers submitted for this quiz from punctuation </li>
-                        <li> Click "Create quiz" to create quiz with selected questions </li>
-                    </div>
-                </div>
-                <div>
+
+<div>
                     {% autoescape off %}
                         <form id="tagFolderSelector" method="POST">
                         <div class="threeCols">
@@ -184,7 +160,3 @@
                         <a href="/fromFolder">Add questions from REALEC</a>
                     </div>
                 </div>
-            </div>
-        </div>
-    </body>
-</html>

@@ -4,7 +4,6 @@ from django.conf import settings
 from django.contrib.auth.decorators import login_required
 from django.db.models import Avg, Q, Sum
 
-
 # Create your views here.
 
 import html
@@ -17,7 +16,7 @@ import pandas as pd
 from math import floor, ceil
 from transliterate import translit
 from io import BytesIO
-from collections import defaultdict, namedtuple
+from collections import defaultdict
 
 
 from .models import *
@@ -26,37 +25,6 @@ from .management.commands.questions_from_folder import generate_questions
 from testmaker import realec_grammar_exercises_without_mc as testmaker
 from conf_files.tags import tagset
 from conf_files.tag_mapping import tag_map
-
-
-PageLink = namedtuple('PageLink', ['text', 'link'])
-
-
-def query_to_str(query):
-    s = '?'
-    s += '&'.join([key+'='+str(value) for key, value in query.items()])
-    return s
-
-
-def get_page_links(query, page_id, total_questions, per_page, step):
-    n_pages = floor(total_questions/per_page)
-
-    left_pages, right_pages = [], []
-
-    query['page'] = 0
-    left_pages.append(PageLink('<< To First', query_to_str(query)))
-
-    for i in range(max(0,page_id-step+1), page_id):
-        query['page'] = str(i)
-        left_pages.append(PageLink(str(i+1), query_to_str(query)))
-    
-    for i in range(page_id+1, min(page_id+step, n_pages-1)):
-        query['page'] = str(i)
-        right_pages.append(PageLink(str(i+1), query_to_str(query)))
-    
-    query['page'] = n_pages-1
-    right_pages.append(PageLink('>> To Last', query_to_str(query)))
-
-    return left_pages, right_pages
 
 
 def check_teacher(user_id, quiz_id):
@@ -68,7 +36,6 @@ def check_teacher(user_id, quiz_id):
     except AttributeError:
         return False
 
-
 def get_group(user):
     try:
         return user.student.group
@@ -78,10 +45,8 @@ def get_group(user):
         elif user.rights == 'S':
             return 'Admin'
 
-
 def is_float(string):
     return string.replace(".", '', 1).isdigit()
-
 
 def isint(string):
     try:
@@ -89,7 +54,6 @@ def isint(string):
         return True
     except:
         return False
-
 
 def split_by_span(questions, endmark='</b>'):
     questions = list(questions)
@@ -99,7 +63,6 @@ def split_by_span(questions, endmark='</b>'):
         split_ind = text.rfind(endmark) + len(endmark)
         questions[idx] = (db_id, (text[:split_ind], text[split_ind:]))
     return questions
-
 
 ## Generating questions from REALEC essay with testmaker
 ## Displaying them to user
@@ -498,7 +461,7 @@ def student_answers(request, quiz_id, student_id, download=False):
             spreadsheet = stream.getvalue()
             response = HttpResponse(spreadsheet, content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
             fn = translit(quiz_name+' '+student_name, 'ru', reversed=True)
-            # print(fn, type(fn))
+            print(fn, type(fn))
             response['Content-Disposition'] = f'attachment; filename="{fn}"".xlsx'
             return response
         else:
@@ -518,12 +481,7 @@ def display_questions(request, err_type=None):
     if 'rights' in request.session:
         if request.session['rights'] == 'T' or request.session['rights'] == 'A':
             sh_answer_questions = Question.objects.filter(question_type="short_answer")
-            if not request.GET:
-                questions = [tuple(i) for i in sh_answer_questions.all().values_list('id', 'question_text')]
-                err_tags = [(True, i['error_tag'], i['error_tag']) for i in sh_answer_questions.order_by('error_tag').values('error_tag').distinct()]
-                folders = [(True, i['id'], i['name']) for i in Folder.objects.all().values('id','name')]
-                folders.insert(0, (True, 'None', 'None'))
-            else:
+            if request.GET:
                 if 'filter' in request.GET:
                     tags = [i[4:] for i in request.GET if i.startswith('tag_')]
                     selected_folders = [i[7:] for i in request.GET if i.startswith('folder_')]
@@ -537,20 +495,20 @@ def display_questions(request, err_type=None):
                         folders.insert(0, (True, 'None', 'None'))
                     else:
                         folders.insert(0, (False, 'None', 'None'))
-                else:
-                    questions = [tuple(i) for i in sh_answer_questions.all().values_list('id', 'question_text')]
-                    err_tags = [(True, i['error_tag'], i['error_tag']) for i in sh_answer_questions.order_by('error_tag').values('error_tag').distinct()]
-                    folders = [(True, i['id'], i['name']) for i in Folder.objects.all().values('id','name')]
-                    folders.insert(0, (True, 'None', 'None'))
+            if not request.GET or (request.GET and 'filter' not in request.GET):
+                questions = [tuple(i) for i in sh_answer_questions.all().values_list('id', 'question_text')]
+                err_tags = [(True, i['error_tag'], i['error_tag']) for i in sh_answer_questions.order_by('error_tag').values('error_tag').distinct()]
+                folders = [(True, i['id'], i['name']) for i in Folder.objects.all().values('id','name')]
+                folders.insert(0, (True, 'None', 'None'))
+            if request.GET:
                 if 'page' in request.GET:
                     try:
                         new_page = int(request.GET['page'])
+                        print(new_page)
                         if per_page*new_page < len(questions):
                             page = new_page
                     except:
                         pass
-            
-            
             if request.POST:
                 if request.POST['item'] == 'quiz':
                     if request.POST["quizName"]:
@@ -589,13 +547,11 @@ def display_questions(request, err_type=None):
                     raise Exception('Incorrect request')
             # for question in all_questions:
             #     question.append(tuple(Answer.objects.filter(question_id=question[0]).values_list('id', 'answer_text')))
+            print(page)
             start_index = page*per_page
-            total_questions = len(questions)
-            left_pages, right_pages = get_page_links(query=request.GET.dict(),
-            page_id=page, total_questions=total_questions, per_page=per_page, step=3)
             questions = questions[start_index:start_index+per_page]
-            return render(request, 'questions_bootstrap.html', {'questions': questions, 'err_tags': err_tags, 'folders': folders,
-            'left_pages': left_pages, 'right_pages': right_pages, 'page_id': page+1})
+            print(len(questions))
+            return render(request, 'questions_bootstrap.html', {'questions': questions, 'err_tags': err_tags, 'folders': folders})
     return HttpResponse('You are not logged in as a teacher or admin. <a href="/login/">Login here</a>')
 
 
@@ -616,57 +572,35 @@ def questions_from_folder(request):
 def add_questions(request, quiz_id):
     if 'rights' in request.session:
         if request.session['rights'] == 'A' or request.session['rights'] == 'T':
-            page = 0
-            per_page = 40
             quiz = Quizz.objects.get(id=quiz_id)
-            sh_answer_questions = Question.objects.filter(question_type='short_answer').exclude(quiz__id=quiz_id)
             if request.POST:
-                questions_to_include = [int(i) for i in request.POST if request.POST[i] == "on" and isint(i)]
-                questions_to_include = Question.objects.filter(id__in=questions_to_include)
-                for q in questions_to_include:
-                    q.quiz.add(quiz)
-                    q.save()
-                return redirect('edit_quiz', quiz_id)
-            if not request.GET:
-                questions = [tuple(i) for i in sh_answer_questions.all().values_list('id', 'question_text')]
-                err_tags = [(True, i['error_tag'], i['error_tag']) for i in sh_answer_questions.order_by('error_tag').values('error_tag').distinct()]
-                folders = [(True, i['id'], i['name']) for i in Folder.objects.all().values('id','name')]
-                folders.insert(0, (True, 'None', 'None'))
-            else:
-                if 'filter' in request.GET:
-                    tags = [i[4:] for i in request.GET if i.startswith('tag_')]
-                    selected_folders = [i[7:] for i in request.GET if i.startswith('folder_')]
+                if 'filter' in request.POST:
+                    tags = [i[4:] for i in request.POST if i.startswith('tag_')]
+                    selected_folders = [i[7:] for i in request.POST if i.startswith('folder_')]
                     selected_folders = [int(i) if i!='None' else None for i in selected_folders]
-                    questions = sh_answer_questions.filter(error_tag__in=tags).filter(folder__id__in=selected_folders).values_list('id', 'question_text')
-                    all_tags = sh_answer_questions.order_by('error_tag').values('error_tag').distinct()
+                    questions = Question.objects.exclude(quiz__id=quiz_id).filter(error_tag__in=tags).filter(folder__id__in=selected_folders).values_list('id', 'question_text')
+                    all_tags = Question.objects.order_by('error_tag').values('error_tag').distinct()
                     err_tags = [(i['error_tag'] in tags, i['error_tag'], i['error_tag']) for i in all_tags]
                     folders = [(i['id'] in selected_folders, i['id'], i['name']) for i in Folder.objects.all().values('id','name')]
                     if None in selected_folders:
-                        questions |= sh_answer_questions.filter(error_tag__in=tags).filter(folder=None).values_list('id', 'question_text')
+                        questions |= Question.objects.exclude(quiz__id=quiz_id).filter(error_tag__in=tags).filter(folder=None).values_list('id', 'question_text')
                         folders.insert(0, (True, 'None', 'None'))
                     else:
                         folders.insert(0, (False, 'None', 'None'))
                 else:
-                    questions = [tuple(i) for i in sh_answer_questions.all().values_list('id', 'question_text')]
-                    err_tags = [(True, i['error_tag'], i['error_tag']) for i in sh_answer_questions.order_by('error_tag').values('error_tag').distinct()]
-                    folders = [(True, i['id'], i['name']) for i in Folder.objects.all().values('id','name')]
-                    folders.insert(0, (True, 'None', 'None'))
-                if 'page' in request.GET:
-                    try:
-                        new_page = int(request.GET['page'])
-                        if per_page*new_page < len(questions):
-                            page = new_page
-                    except:
-                        pass
+                    questions_to_include = [int(i) for i in request.POST if request.POST[i] == "on" and isint(i)]
+                    questions_to_include = Question.objects.filter(id__in=questions_to_include)
+                    for q in questions_to_include:
+                        q.quiz.add(quiz)
+                        q.save()
+                    return redirect('edit_quiz', quiz_id)
+            else:
+                questions = [tuple(i) for i in Question.objects.exclude(quiz__id=quiz_id).values_list('id', 'question_text')]
+                err_tags = [(True, i['error_tag'], i['error_tag']) for i in Question.objects.order_by('error_tag').values('error_tag').distinct()]
+                folders = [(True, i['id'], i['name']) for i in Folder.objects.all().values('id','name')]
+                folders.insert(0, (True, 'None', 'None'))
             
-            start_index = page*per_page
-            total_questions = len(questions)
-            left_pages, right_pages = get_page_links(query=request.GET.dict(),
-            page_id=page, total_questions=total_questions, per_page=per_page, step=3)
-            questions = questions[start_index:start_index+per_page]
-            return render(request, 'add_questions_bootstrap.html', {'quiz_name': quiz.name, 'questions': questions, 'err_tags': err_tags,
-             'folders': folders, 'quiz_id': quiz_id, 'left_pages': left_pages, 'right_pages': right_pages,
-             'page_id': page+1})
+            return render(request, 'add_questions.html', {'quiz_name': quiz.name, 'questions': questions, 'err_tags': err_tags, 'folders': folders})
             
     return HttpResponse('You are not logged in as a teacher or admin. <a href="/login/">Login here</a>')
 

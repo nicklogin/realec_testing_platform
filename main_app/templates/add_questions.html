@@ -107,11 +107,10 @@
                 <div>
                     {% autoescape off %}
                     <h2> Select questions to add to quiz {{ quiz_name }}</h2>  
-                        <form id="tagFolderSelector" method="POST">
+                        <form action="/addQuestions/{{quiz_id}}" id="tagFolderSelector" method="GET">
                         <div class="threeCols">
                             <div>
                                 <div class="multiselect">
-                                    {% csrf_token %}
                                     <select name="filter" onclick="showCheckboxes()">
                                         <option value="y" selected hidden> Select error tag from REALEC </option>
                                     </select>
@@ -150,7 +149,7 @@
                                 </div>
                             </div>
                             <div>
-                                <button onclick="applyFilter()"> Apply tag and folder filter </button>
+                                <button> Apply tag and folder filter </button>
                             </div>
                         </div>
                         </form>

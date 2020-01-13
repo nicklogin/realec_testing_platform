@@ -12,15 +12,19 @@ class Command(BaseCommand):
     
     def handle(self, *args, **kwargs):
         ## To add: check for duplicate documents:
-        exercises = testmaker.download_folder_and_make_exercises(folder_name=kwargs['folder'],
-        error_types=kwargs['tag'], file_output=False, moodle_output=False, make_two_variants=False)['short_answer']
-        last_id = Question.objects.last().id
-        if kwargs['strike']:
-            questions = [Question(id=last_id+idx+1, question_text=ex[0].replace('<b>','<b><s>').replace('</b>', '</s></b>')
-            ,error_tag=ex[3], question_type="short_answer", question_level=0) for idx, ex in enumerate(exercises)]
-        else:
-            questions = [Question(id=last_id+idx,question_text=ex[0], error_tag=ex[3],
-            question_type="short_answer", question_level=0) for idx, ex in enumerate(exercises)]
-        Question.objects.bulk_create(questions)
-        answers=[Answer(question_id_id=q.id, answer_text=ans) for ex, q in zip(exercises, questions) for ans in ex[1]]
-        Answer.objects.bulk_create(answers)
+        generate_questions(kwargs['folder'], kwargs['tag'], kwargs['strike'])
+    
+def generate_questions(folder, tags, strike, delete_downloaded=True):
+    exercises = testmaker.download_folder_and_make_exercises(folder_name=folder,
+    error_types=tags, file_output=False, moodle_output=False, make_two_variants=False,
+    delete_downloaded=delete_downloaded)['short_answer']
+    last_id = Question.objects.last().id
+    if strike:
+        questions = [Question(id=last_id+idx+1, question_text=ex[0].replace('<b>','<b><s>').replace('</b>', '</s></b>')
+        ,error_tag=ex[3], question_type="short_answer", question_level=0) for idx, ex in enumerate(exercises)]
+    else:
+        questions = [Question(id=last_id+idx,question_text=ex[0], error_tag=ex[3],
+        question_type="short_answer", question_level=0) for idx, ex in enumerate(exercises)]
+    Question.objects.bulk_create(questions)
+    answers=[Answer(question_id_id=q.id, answer_text=ans) for ex, q in zip(exercises, questions) for ans in ex[1]]
+    Answer.objects.bulk_create(answers)
