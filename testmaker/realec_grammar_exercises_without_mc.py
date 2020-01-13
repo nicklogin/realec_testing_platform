@@ -1,4 +1,4 @@
-import sys, codecs, re, os, traceback
+import sys, codecs, re, os, shutil, traceback
 from collections import defaultdict, OrderedDict
 from datetime import datetime
 import shutil
@@ -178,6 +178,9 @@ grammar tags:
 		Tautology
 		Absence_explanation
 """
+
+def create_folder_from_questions(questions, folder_name):
+    pass
 
 def get_fname_time():
     dt = datetime.now()
@@ -1314,6 +1317,7 @@ def download_folder_and_make_exercises(folder_name, output_path=None, maintain_l
                         all_texts.add(essay_text)
     del all_texts
     exercise_types = ['short_answer']
+    print(error_types)
     e = Exercise(path_to_realecdata = r.path,
     exercise_types=exercise_types, file_output=file_output,
     moodle_output=moodle_output,
@@ -1324,12 +1328,13 @@ def download_folder_and_make_exercises(folder_name, output_path=None, maintain_l
     hier_choice=True, show_messages=False, keep_processed=keep_processed)
     e.make_data_ready_4exercise()
     e.make_exercise()
+    if delete_downloaded:
+        shutil.rmtree(path_to_downloaded, ignore_errors=True)
     if file_output:
         return e.output_file_names
     else:
         return e.output_objects
-    if delete_downloaded:
-        os.rmdir(path_to_downloaded)
+
 
 if __name__ == '__main__':
     console_user_interface()

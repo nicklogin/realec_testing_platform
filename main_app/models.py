@@ -70,6 +70,10 @@ class Question(models.Model):
     # question_group = models.CharField(max_length=45, null=True)
 
 
+    ## special field for retrieving previously created questions:
+    ukey = models.CharField(max_length=100, null=True)
+
+
 class Answer(models.Model):
     question_id = models.ForeignKey(Question,
     on_delete=models.SET_NULL, null=True)

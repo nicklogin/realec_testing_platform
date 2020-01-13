@@ -48,6 +48,7 @@ th, td {
     border: 1px #dadada solid;
     height: 240px;
     width: 100%;
+    position: relative;
     overflow-x: scroll;
 }
 /* taken from https://stackoverflow.com/a/14070126 */

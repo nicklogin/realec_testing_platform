@@ -16,9 +16,11 @@
                 var checkboxes = document.getElementById("checkboxes");
                 if (!expanded) {
                     checkboxes.style.display = "block";
+                    checkboxes.style.zIndex = 2000;
                     expanded = true;
                 } else {
                     checkboxes.style.display = "none";
+                    checkboxes.style.zIndex = "auto";
                     expanded = false;
                 }
             }
@@ -27,9 +29,11 @@
                 var checkboxes = document.getElementById("folderCheckboxes");
                 if (!expanded1) {
                     checkboxes.style.display = "block";
+                    checkboxes.style.zIndex = 2000;
                     expanded1 = true;
                 } else {
                     checkboxes.style.display = "none";
+                    checkboxes.style.zIndex = "auto";
                     expanded1 = false;
                 }
             }

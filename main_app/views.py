@@ -520,7 +520,7 @@ def display_questions(request, err_type=None):
             sh_answer_questions = Question.objects.filter(question_type="short_answer")
             if not request.GET:
                 questions = [tuple(i) for i in sh_answer_questions.all().values_list('id', 'question_text')]
-                err_tags = [(True, i['error_tag'], i['error_tag']) for i in sh_answer_questions.order_by('error_tag').values('error_tag').distinct()]
+                err_tags = [(False, tag, tag_map[tag]) if tag in tag_map else (False, tag, tag) for tag in tagset]
                 folders = [(True, i['id'], i['name']) for i in Folder.objects.all().values('id','name')]
                 folders.insert(0, (True, 'None', 'None'))
             else:
@@ -530,7 +530,7 @@ def display_questions(request, err_type=None):
                     selected_folders = [int(i) if i!='None' else None for i in selected_folders]
                     questions = sh_answer_questions.filter(error_tag__in=tags).filter(folder__id__in=selected_folders).values_list('id', 'question_text')
                     all_tags = sh_answer_questions.order_by('error_tag').values('error_tag').distinct()
-                    err_tags = [(i['error_tag'] in tags, i['error_tag'], i['error_tag']) for i in all_tags]
+                    err_tags = [(False, tag, tag_map[tag]) if tag in tag_map else (False, tag, tag) for tag in tagset]
                     folders = [(i['id'] in selected_folders, i['id'], i['name']) for i in Folder.objects.all().values('id','name')]
                     if None in selected_folders:
                         questions |= sh_answer_questions.filter(error_tag__in=tags).filter(folder=None).values_list('id', 'question_text')
@@ -605,7 +605,13 @@ def questions_from_folder(request):
             if request.POST:
                 path = request.POST['path']
                 tags = [field[4:] for field in request.POST if field.startswith('tag_')]
-                generate_questions(folder=path, tags=tags, strike=True, delete_downloaded=True)
+                if 'new_qfolder' in request.POST:
+                    new_qfolder = True
+                    if 'qfolder_name' in request.POST:
+                        qfolder_name = request.POST['qfolder_name']
+                ukey_prefix = request.session['user_id']
+                generate_questions(folder=path, tags=tags, strike=True, delete_downloaded=True,
+                new_qfolder=new_qfolder, qfolder_name=qfolder_name)
                 return redirect('display_questions')
             err_tags = [(False, tag, tag_map[tag]) if tag in tag_map else (False, tag, tag) for tag in tagset]
             return render(request, 'questions_from_folder.html',
