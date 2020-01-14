@@ -154,7 +154,7 @@ def show_generated_questions(request, coll, doc):
                 # почему-то падает (не выдаёт вопросов) на всех эссе, кроме /exam/exam2017/ABL_1_1
                 # это всё потому, что хром переводит все буквы в названии эссе в uppercase (на мозилле всё ок)
                 # (только если вбивать адрес руками)
-                print(essay_path)
+                # print(essay_path)
                 questions = testmaker.generate_exercises_from_essay(essay_path, context=True, exercise_types=['short_answer'],
                 hier_choice=True, file_output=False, moodle_output=False)['short_answer']
                 return render(request, 'generquestions.html', {'questions': enumerate(questions)})
@@ -520,7 +520,7 @@ def display_questions(request, err_type=None):
             sh_answer_questions = Question.objects.filter(question_type="short_answer")
             if not request.GET:
                 questions = [tuple(i) for i in sh_answer_questions.all().values_list('id', 'question_text')]
-                err_tags = [(False, tag, tag_map[tag]) if tag in tag_map else (False, tag, tag) for tag in tagset]
+                err_tags = [(True, tag, tag_map[tag]) if tag in tag_map else (True, tag, tag) for tag in tagset]
                 folders = [(True, i['id'], i['name']) for i in Folder.objects.all().values('id','name')]
                 folders.insert(0, (True, 'None', 'None'))
             else:
@@ -531,6 +531,9 @@ def display_questions(request, err_type=None):
                     questions = sh_answer_questions.filter(error_tag__in=tags).filter(folder__id__in=selected_folders).values_list('id', 'question_text')
                     all_tags = sh_answer_questions.order_by('error_tag').values('error_tag').distinct()
                     err_tags = [(False, tag, tag_map[tag]) if tag in tag_map else (False, tag, tag) for tag in tagset]
+                    for idx, err_tag in enumerate(err_tags):
+                        if err_tag[1] in tags:
+                            err_tags[idx] = (True, err_tag[1], err_tag[2])
                     folders = [(i['id'] in selected_folders, i['id'], i['name']) for i in Folder.objects.all().values('id','name')]
                     if None in selected_folders:
                         questions |= sh_answer_questions.filter(error_tag__in=tags).filter(folder=None).values_list('id', 'question_text')
@@ -970,7 +973,7 @@ def student_test_results(request, test_id, student_id, download=False):
             spreadsheet = stream.getvalue()
             response = HttpResponse(spreadsheet, content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
             fn = translit(quiz_name+' '+student_name, 'ru', reversed=True)
-            print(fn, type(fn))
+            # print(fn, type(fn))
             response['Content-Disposition'] = f'attachment; filename="{fn}"".xlsx'
             return response
         else:
