@@ -1,5 +1,5 @@
 from django.shortcuts import render, redirect
-from django.http import HttpResponse
+from django.http import HttpResponse, JsonResponse, HttpResponseForbidden
 from django.conf import settings
 from django.contrib.auth.decorators import login_required
 from django.db.models import Avg, Q, Sum
@@ -987,6 +987,18 @@ def student_test_results(request, test_id, student_id, download=False):
 def download_ielts_results(request, test_id, student_id):
     return student_test_results(request, test_id, student_id, download=True)
 
+## Don't need that, as TinyMCE byte-encodes images automatically:
+# def img_upload(request):
+#     ## Used for Image uploads in TinyMCE editor
+#     ## https://www.tiny.cloud/docs/configure/file-image-upload/
+#     if "rights" in request.session:
+#         if request.session["rights"] in ("A", "T"):
+#             if request.FILES:
+#                 print([field for field in request.FILES])
+#                 return JsonResponse({'location': 'media/non-existant-img.jpg'})
+#     return HttpResponseForbidden()
+
+#     # return JsonResponse({'location': img_path})
 
 def test_ajax(request):
     if request.POST:

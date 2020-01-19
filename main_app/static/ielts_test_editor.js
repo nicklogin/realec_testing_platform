@@ -33,8 +33,16 @@ var restore_qform = function(section_id, q_id) {};
 var addMCE = function(elem_id, height=456) {
     elem = document.getElementById(elem_id);
     tinymce.init({
-        target: elem,
-        height: height
+        selector: 'textarea',
+        paste_data_images: true,
+        // image_upload_url: "/imgUpload",
+        automatic_uploads: true,
+        plugins: [
+        "advlist autolink lists link image charmap print preview anchor",
+        "searchreplace visualblocks code fullscreen",
+        "insertdatetime media table contextmenu paste"
+        ],
+        toolbar: "insertfile undo redo | styleselect | bold italic | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent | link image"
     });
 };
 
