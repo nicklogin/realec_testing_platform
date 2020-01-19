@@ -233,7 +233,7 @@ def display_quiz(request, quiz_id):
         random.seed(User.objects.get(login=request.session["user_id"]))
         random.shuffle(quiz_questions)
         quiz_questions = quiz_questions[:50]
-        return render(request, 'displayquiz.html', {'questions': enumerate(quiz_questions), 'quiz_id': quiz_id})
+        return render(request, 'displayquiz_bootstrap.html', {'questions': enumerate(quiz_questions), 'quiz_id': quiz_id})
     else:
         return redirect('login')
 
@@ -336,7 +336,7 @@ def edit_quiz(request, quiz_id, page_num=1):
         for question in quiz_questions:
             question.append(tuple(Answer.objects.filter(question_id=question[0]).values_list('id', 'answer_text')))
         # print(quiz_questions)
-        return render(request, 'editquiz.html', {'questions': enumerate(quiz_questions, start=questions_per_page*page_num), 'quiz_name': quiz_identifier, 'quiz_id': quiz.id,
+        return render(request, 'editquiz_bootstrap.html', {'questions': enumerate(quiz_questions, start=questions_per_page*page_num), 'quiz_name': quiz_identifier, 'quiz_id': quiz.id,
         'message': message, 'checked': checked, 'page_nums': [i for i in range(1, ceil(count/questions_per_page)+1)], 'page': page_num+1, 'total_pages': ceil(count/questions_per_page)})
     else:
         return HttpResponse('You are not logged in as a teacher or admin. <a href="/login/">Login here</a>')
@@ -352,12 +352,12 @@ def quiz_list(request):
                 quizzes = Quizz.objects.filter(teacher=teacher).values_list('name', 'id')
             elif request.session["rights"] == "A":
                 quizzes = Quizz.objects.all().values_list('name', 'id')
-            return render(request, 'quizlist.html', {'quizlist':quizzes,
+            return render(request, 'quizlist_bootstrap.html', {'quizlist':quizzes,
             'student': False, 'results': False})
 
         elif request.session["rights"] == "S":
             quizzes = Quizz.objects.all().values_list('name', 'id')
-            return render(request, 'quizlist.html', {'quizlist':quizzes,
+            return render(request, 'quizlist_bootstrap.html', {'quizlist':quizzes,
             'student': True, 'results': False})
         else:
             return HttpResponse("Authentication error")
@@ -402,7 +402,7 @@ def login(request):
 
 def index(request):
     if 'user_id' in request.session:
-        return render(request, 'index.html')
+        return render(request, 'index_bootstrap.html')
     else:
         return redirect('login')
 
@@ -421,7 +421,7 @@ def show_results(request):
                     quizzes = Quizz.objects.filter(teacher=User.objects.get(login=request.session['user_id'])).values_list('name', 'id')
                 elif request.session["rights"] == 'A':
                     quizzes = Quizz.objects.all().values_list('name', 'id')
-                return render(request, 'quizlist.html', {'quizlist': quizzes,
+                return render(request, 'quizlist_bootstrap.html', {'quizlist': quizzes,
                 'student': False, 'results': True})
             else:
                 return HttpResponse("Authentication error")
@@ -445,7 +445,7 @@ def quiz_grades(request, quiz_id):
                 marks[student] = quiz_results.filter(student=student).aggregate(Avg('mark'))['mark__avg']
             marks = [(student.login, student.full_name, get_group(student), round(marks[student], 2)) for student in sorted(marks,
             key=lambda x: -marks[x])]
-            return render(request, 'quiz_results.html', {'marks': marks,
+            return render(request, 'quiz_results_bootstrap.html', {'marks': marks,
             'quiz_name': quiz.name, 'quiz_id': quiz.id})
         else:
             return HttpResponse('You are not logged in as a teacher or admin. <a href="/login/">Login here</a>')
@@ -503,7 +503,7 @@ def student_answers(request, quiz_id, student_id, download=False):
             return response
         else:
             download_url = f"/grades/{quiz_id}/{student_id}/download"
-            return render(request, 'student_results.html', {'student_answers': list(student_answers),
+            return render(request, 'student_results_bootstrap.html', {'student_answers': list(student_answers),
             'student_name': student_name, 'quiz_name': quiz_name,
             'download_url': download_url})  
     else:
@@ -791,18 +791,18 @@ def edit_ielts_test(request, test_id=None):
                     sections = Section.objects.filter(ielts_test=test)
                     test_sections = [(sec.id, get_section_contents(sec.id)) for sec in sections]
                 else:
-                    return render(request, "edit_ielts_test.html", {'test_sections': []})
+                    return render(request, "new_ielts_test_bootstrap.html", {'test_sections': []})
     return HttpResponse('You are not logged in as a teacher or admin. <a href="/login/">Login here</a>')
 
 def ielts_test_list(request):
     if "rights" in request.session:
         if request.session["rights"] in ("T", "A"):
             tests = IELTS_Test.objects.all().values_list('name', 'id')
-            return render(request, 'ielts_tests.html', {'quizlist': tests,
+            return render(request, 'ielts_tests_bootstrap.html', {'quizlist': tests,
             'student': False})
         elif request.session["rights"] == "S":
             tests = IELTS_Test.objects.all().values_list('name', 'id')
-            return render(request, 'ielts_tests.html', {'quizlist': tests,
+            return render(request, 'ielts_tests_bootstrap.html', {'quizlist': tests,
             'student': True})
         else:
             return HttpResponse("Authentication error")
@@ -919,7 +919,7 @@ def ielts_grades(request, test_id):
                 marks[student] = quiz_results.filter(student=student).aggregate(Sum('mark'))['mark__sum']#/test.full_grade
             marks = [(student.login, student.full_name, get_group(student), round(marks[student], 2)) for student in sorted(marks,
             key=lambda x: -marks[x])]
-            return render(request, 'ielts_results.html', {'marks': marks,
+            return render(request, 'ielts_results_bootstrap.html', {'marks': marks,
             'quiz_name': test.name, 'quiz_id': test.id})
         else:
             return HttpResponse('You are not logged in as a teacher or admin. <a href="/login/">Login here</a>')
@@ -978,7 +978,7 @@ def student_test_results(request, test_id, student_id, download=False):
             return response
         else:
             download_url = f"/IELTSgrades/{test_id}/{student_id}/download"
-            return render(request, 'student_results.html', {'student_answers': list(student_answers),
+            return render(request, 'student_results_bootstrap.html', {'student_answers': list(student_answers),
             'student_name': student_name, 'quiz_name': quiz_name,
             'download_url': download_url})  
     else:

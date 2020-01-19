@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+{% load static %}
+<html>
+    <head>
+        <!-- Bootstrap CSS -->
+        <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+        <link href="{% static "basic.css" %}" rel="stylesheet" />
+    </head>
+    <body>
+
+        <div class="d-flex flex-column flex-md-row align-items-center p-3 px-md-4 mb-3 bg-white border-bottom box-shadow">
+          <h5 class="my-0 mr-md-auto font-weight-normal">REALEC Testing Platform</h5>
+          <nav class="my-2 my-md-0 mr-md-3">
+            <a class="p-2 text-dark" href="/quizzes">Quizzes</a>
+            <a class="p-2 text-dark" href="/grades">Grades</a>
+            <a class="p-2 text-dark" href="/questions">Questions</a>
+            <a class="p-2 text-dark" href="/users">Users</a>
+            <a class="p-2 text-dark" href="/IELTS">IELTS</a>
+          </nav>
+          <a class="btn btn-outline-primary" href="/login">Log Out</a>
+        </div>
+
+        <div class="container-fluid">
+            <div class = "main">
+              <div>
+                <h1> Available quizzes </h1>
+                <ul>
+                    {% if student %}
+                    {% for quiz in quizlist %}
+                        <li> <b>Quiz "{{ quiz.0 }}"</b> <a href="/takeQuiz/{{ quiz.1 }}"> Take quiz</a> </li>
+                    {% endfor %}
+                    {% else %}
+                        {% if results %}
+                            {% for quiz in quizlist %}
+                            <li> <b>Quiz "{{ quiz.0 }}"</b> <a href="/grades/{{ quiz.1 }}"> View results</a> </li>
+                            {% endfor %}
+                        {% else %}
+                            {% for quiz in quizlist %}
+                                <li> <b>Quiz "{{ quiz.0 }}"</b> <a href="/editQuiz/{{ quiz.1 }}"> Edit</a> <a href="/takeQuiz/{{ quiz.1 }}"> Preview</a> </li>
+                            {% endfor %}
+                        {% endif %}
+                    {% endif %}
+                </ul>
+            </div>
+            </div>
+        </div>
+    </body>
+</html>

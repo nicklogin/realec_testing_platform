@@ -31,7 +31,22 @@ var restore_section = function(section_id) {};
 var restore_qform = function(section_id, q_id) {};
 
 var addMCE = function(elem_id, height=456) {
-    elem = document.getElementById(elem_id);
+    // elem = document.getElementById(elem_id);
+    tinymce.init({
+        selector: 'textarea#'+elem_id,
+        paste_data_images: true,
+        // image_upload_url: "/imgUpload",
+        automatic_uploads: true,
+        plugins: [
+        "advlist autolink lists link image charmap print preview anchor",
+        "searchreplace visualblocks code fullscreen",
+        "insertdatetime media table contextmenu paste"
+        ],
+        toolbar: "insertfile undo redo | styleselect | bold italic | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent | link image"
+    });
+};
+
+var allMCEs = function() {
     tinymce.init({
         selector: 'textarea',
         paste_data_images: true,
@@ -44,7 +59,7 @@ var addMCE = function(elem_id, height=456) {
         ],
         toolbar: "insertfile undo redo | styleselect | bold italic | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent | link image"
     });
-};
+}
 
 var changeAttachment = function(selector, attachment_id) {
     attachment = document.getElementById(attachment_id);
@@ -171,7 +186,7 @@ var addSection = function() {
     name="pdf_upload_'+att_id+'" id="pdf_input_'+att_id+'" \
     onchange="pdf_preview(this)">\
     </input>\
-    <embed id="book_'+att_id+'" type="application/pdf" style="height: 400px; width: 100%;" controls>\
+    <embed id="book_'+att_id+'" type="application/pdf" style="height: 100%; width: 100%;" controls>\
     </embed>\
     <br />\
     <br />';

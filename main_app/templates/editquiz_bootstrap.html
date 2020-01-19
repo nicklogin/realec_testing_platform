@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+{% load static %}
+<html>
+    <head>
+        <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.7/jquery.js"></script> 
+        <script type="text/javascript" src="http://js.nicedit.com/nicEdit-latest.js"></script>
+        <script type="text/javascript" src="{% static "question_editor.js" %}"></script>
+        <script>
+            bkLib.onDomLoaded(function() { nicEditors.allTextAreas() });
+        </script>
+        <!-- Bootstrap CSS -->
+        <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+        <link href="{% static "basic.css" %}" rel="stylesheet" />
+    </head>
+    <body>
+
+        <div class="d-flex flex-column flex-md-row align-items-center p-3 px-md-4 mb-3 bg-white border-bottom box-shadow">
+          <h5 class="my-0 mr-md-auto font-weight-normal">REALEC Testing Platform</h5>
+          <nav class="my-2 my-md-0 mr-md-3">
+            <a class="p-2 text-dark" href="/quizzes">Quizzes</a>
+            <a class="p-2 text-dark" href="/grades">Grades</a>
+            <a class="p-2 text-dark" href="/questions">Questions</a>
+            <a class="p-2 text-dark" href="/users">Users</a>
+            <a class="p-2 text-dark" href="/IELTS">IELTS</a>
+          </nav>
+          <a class="btn btn-outline-primary" href="/login">Log Out</a>
+        </div>
+
+        <div class="container-fluid">
+            <div class = "main">
+              <div>
+                {% autoescape off %}
+                    <a href="/addQuestions/{{ quiz_id }}"> Add questions </a>
+                {% endautoescape %}
+                <h1>Quiz {{ quiz_name }} </h1>
+                <button class="navbutton" onclick="toBottom()"> Scroll to bottom</button>
+                <br /> <br />
+                <div class="pagelist">
+                    Maximum questions per page: <input type="number" class="pagelist" min="1" max="400" id="QuestionCount"> <button type="button" onclick="changeNumQuest()">Change</button><br /><br />
+                    Page {{ page }} out of {{ total_pages }} <br />
+                    Pages: 
+                    {% for page_num in page_nums %}
+                        {% if page_num == page %}
+                            <a class="pagelink">{{ page_num }}</a>
+                        {% else %}
+                            <a class="pagelink" href="/editQuiz/{{ quiz_id }}/{{ page_num }}"> {{ page_num }}  </a>
+                        {% endif %}
+                    {% endfor %}<br /><br />
+                </div>
+                {% autoescape off %}
+                    {{ message }} <br /> <br />
+                {% endautoescape %}
+                <form method="POST" id="editForm">
+                    {% csrf_token %}
+                    {% for question in questions %}
+                    <h2>Question {{ question.0 }}</h2>
+                    <textarea name="question_{{ question.1.0 }}" id="question_{{ question.1.0 }}" class="myTextArea">{{ question.1.1 }}</textarea><br />
+                    <input type="checkbox" name="delete_{{ question.1.0 }}">Delete this question from quiz</input>
+                    <button type="button" onclick="restoreQuestion({{ question.1.0 }})">Restore to default</button><br />
+                    <h3>Answers</h3><br />
+                    {% for answer in question.1.2 %}
+                        <textarea name="answer_{{ question.1.0 }}_{{ answer.0 }}" id="{{ question.1.0 }}_{{ answer.0 }}" class="myTextArea">{{ answer.1 }}</textarea><br />
+                        <input type="checkbox" name="delete_{{ question.1.0 }}_{{ answer.0 }}">Delete this answer from question</input>
+                        <button type="button" id="restore_{{ question.1.0 }}_{{ answer.0 }}" onclick="restoreAnswer(this)">Restore to default</button><br />
+                    {% endfor %}
+                    <button type="button" onclick="addAnswer(this, {{ question.1.0 }})">Add another right answer</button> <br />
+                    {% endfor %} <br /><br />
+                    <input type="checkbox" name="strip_answers" {{checked}}> Strip punctuation and parenthesis from submitted answers </input> <br />
+                </form>
+                <button onclick="submitEditingForm()"> Save changes </button><br /><br />
+                <button class="navbutton" onclick="toTop()">Scroll to top</button>
+              </div>
+            </div>
+        </div>
+    </body>
+</html>

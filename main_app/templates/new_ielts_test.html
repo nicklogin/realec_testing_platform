@@ -39,9 +39,34 @@
                 {% autoescape off %}
                 <input type="hidden" id="csrf_token" name="csrfmiddlewaretoken" value="{{ csrf_token }}">
                 <div id="sections">
+                    <!-- <div class="section">
+                        <b>Name:</b> <input type="text">
+                        <b>Type:</b>
+                        <select name="section-type_0" onchange="changeAttachment(this, 'attachment_0')">
+                            <option value="r"> Reading</option>
+                            <option value="l"> Listening </option>
+                        </select>
+                        <br />
+                        <br />
+                        <div class="equalCols">
+                            <div>
+                            <textarea id="section_0" name="section_0" cols="50" rows="30"></textarea>
+                            </div>
+                            <div id="attachment_0">
+                                <b>PDF Upload: </b><br />
+                                <input type="file" name="pdf_upload_0" id="pdf_input_0" onchange="pdf_preview(this)">
+                                </input>
+                                <embed id="book_0" type="application/pdf" style="height: 400px; width: 100%;" controls>
+                                </embed>
+                                <br />
+                                <br />
+                            </div>
+                        </div>
+                        <button type="button" onclick="addSimpleQuestionForm(this, 0)">Add questions</button>
+                    </div> -->
                     {% for test_section in test_sections %}
-                    <div class="section" id="test_section_{{ test_section.id }}">
-                        <input type="text" name="sec_name_{{ test_section.id }}" value="{{ test_section.name }}">
+                    <div class="section" id="test_section_{{ test_section.0 }}">
+                        {{ test_section.1 }}
                     </div>
                     {% endfor %}
                 </div>

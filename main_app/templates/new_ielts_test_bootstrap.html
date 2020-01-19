@@ -5,35 +5,27 @@
         <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
         <script type="text/javascript" src="{% static "tinymce/js/tinymce/tinymce.min.js" %}"></script>
         <script type="text/javascript" src="{% static "ielts_test_editor.js" %}"></script>
-        <!-- <script>
-            tinymce.init({
-                selector: 'textarea',
-                paste_data_images: true,
-                image_upload_url: "/imgUpload",
-                automatic_uploads: true,
-                plugins: [
-        "advlist autolink lists link image charmap print preview anchor",
-        "searchreplace visualblocks code fullscreen",
-        "insertdatetime media table contextmenu paste"
-    ],
-	paste_data_images: true,
-    toolbar: "insertfile undo redo | styleselect | bold italic | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent | link image"
-            });
-        </script> -->
+        <!-- Bootstrap CSS -->
+        <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
         <link href="{% static "basic.css" %}" rel="stylesheet" />
     </head>
     <body>
-        <div class="main">
-            <div class="mainarea">
-                <div class="navbar">
-                    <li><a href="/quizzes">Quizzes</a></li>
-                    <li><a href="/grades">Grades</a></li>
-                    <li><a href="/questions">Questions</a></li>
-                    <li><a href="/users">Users</a></li>
-                    <li><a href="/IELTS">IELTS</a></li>
-                    <li><a href="/login">Log Out</a></li>
-                </div>
-            <div>
+
+        <div class="d-flex flex-column flex-md-row align-items-center p-3 px-md-4 mb-3 bg-white border-bottom box-shadow">
+          <h5 class="my-0 mr-md-auto font-weight-normal">REALEC Testing Platform</h5>
+          <nav class="my-2 my-md-0 mr-md-3">
+            <a class="p-2 text-dark" href="/quizzes">Quizzes</a>
+            <a class="p-2 text-dark" href="/grades">Grades</a>
+            <a class="p-2 text-dark" href="/questions">Questions</a>
+            <a class="p-2 text-dark" href="/users">Users</a>
+            <a class="p-2 text-dark" href="/IELTS">IELTS</a>
+          </nav>
+          <a class="btn btn-outline-primary" href="/login">Log Out</a>
+        </div>
+
+        <div class="container-fluid">
+            <div class = "main">
+              <div>
                 <form method="POST" enctype="multipart/form-data">
                 <b>Input test name:</b> <input type="text" name="testName">
                 {% autoescape off %}
@@ -41,7 +33,8 @@
                 <div id="sections">
                     {% for test_section in test_sections %}
                     <div class="section" id="test_section_{{ test_section.id }}">
-                        <input type="text" name="sec_name_{{ test_section.id }}" value="{{ test_section.name }}">
+                        <b>Name:</b> <input type="text" name="sec_name_{{ test_section.id }}">
+                        <b>Type:</b>
                     </div>
                     {% endfor %}
                 </div>
@@ -51,6 +44,7 @@
                 <!-- <button type="button" onclick="testAjaxPost('{{ csrf_token }}')">Test AJAX POST Request</button> -->
                 <button>Save</button>
                 </form>
+              </div>
             </div>
         </div>
     </body>

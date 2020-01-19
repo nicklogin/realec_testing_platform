@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+{% load static %}
+<html>
+    <head>
+        <!-- Bootstrap CSS -->
+        <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+        <link href="{% static "basic.css" %}" rel="stylesheet" />
+    </head>
+    <body>
+
+        <div class="d-flex flex-column flex-md-row align-items-center p-3 px-md-4 mb-3 bg-white border-bottom box-shadow">
+          <h5 class="my-0 mr-md-auto font-weight-normal">REALEC Testing Platform</h5>
+          <nav class="my-2 my-md-0 mr-md-3">
+            <a class="p-2 text-dark" href="/quizzes">Quizzes</a>
+            <a class="p-2 text-dark" href="/grades">Grades</a>
+            <a class="p-2 text-dark" href="/questions">Questions</a>
+            <a class="p-2 text-dark" href="/users">Users</a>
+            <a class="p-2 text-dark" href="/IELTS">IELTS</a>
+          </nav>
+          <a class="btn btn-outline-primary" href="/login">Log Out</a>
+        </div>
+
+        <div class="container-fluid">
+            <div class = "main">
+              <div>
+                {% autoescape off %}
+                <h1> Results of {{ student_name }} in {{ quiz_name }}</h1>
+                <b>Download:</b>  <a href="{{ download_url }}">Excel file</a><br /><br />
+                <form method="POST" id="editForm">
+                    {% csrf_token %}
+                    <table>
+                        <tr>
+                            <th> Question </th>
+                            <th> Submitted answer </th>
+                            <th> Correct answers </th>
+                            <th> Mark </th>
+                            <th> Fraction of correct answers</th>
+                        </tr>
+                        {% for entry in student_answers %}
+                        <tr>
+                            <td> {{ entry.2 }} </td>
+                            <td> {{ entry.3 }} <br />
+                            <input type="checkbox" name="addRight_{{ entry.1 }}_{{ entry.0 }}" /> Mark as new correct</td>
+                            <td> {{ entry.5 }} </td>
+                            <td> <input type="text" name="mark_{{ entry.0 }}" value="{{ entry.4 }}"> </td>
+                            <td> {{ entry.6 }} </td>
+                        </tr>
+                        {% endfor %}
+                    </table><br />
+                    <input type="submit" value="Save changes"/>
+                </form>
+                {% endautoescape %}
+              </div>
+            </div>
+        </div>
+    </body>
+</html>
