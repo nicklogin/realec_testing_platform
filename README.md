@@ -1,6 +1,7 @@
-Системные требования:
- - Python 3.6.4
- - Django 2.1.3
- - MySQL 8.0.13
- - mysqlclient для Python36 отсюда: https://www.lfd.uci.edu/~gohlke/pythonlibs/#mysqlclient
- - django-annoying для Python36: https://github.com/skorokithakis/django-annoying
+# REALEC Testing Platform
+
+A tool for evaluating students' performance using corpus data from REALEC corpus (realec.org)
+
+Written in Python 3.6 + Django
+
+To run an instance of our testing platform locally, please change settings.py in testing_platform/ folder according to the tutorial: https://docs.djangoproject.com/en/2.2/intro/tutorial02/
