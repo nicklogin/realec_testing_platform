@@ -1,6 +1,6 @@
 # REALEC Testing Platform
 
-A tool for evaluating students' performance using corpus data from REALEC corpus (realec.org)
+A tool for evaluating students' performance using corpus data from REALEC corpus (http://realec.org)
 
 Written in Python 3.6 + Django
 
