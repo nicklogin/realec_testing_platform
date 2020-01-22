@@ -778,6 +778,14 @@ def edit_ielts_test(request, test_id=None):
                         for ans in answers:
                             a = Answer(question_id=q, answer_text=ans)
                             a.save()
+
+                        multiple_key = 'wrong_'+str(new_section_id)+'_'+str(q_id)
+
+                        if multiple_key in request.POST:
+                            wrong_answers = request.POST[multiple_key].split(";")
+                            
+                            wAnswers = [WrongAnswer(question=q, answer_text=wAnswer) for wAnswer in wrong_answers]
+                            WrongAnswer.objects.bulk_create(wAnswers)
                     
                 Test.full_grade = full_grade(Test)
                 Test.save()

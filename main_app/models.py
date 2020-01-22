@@ -1,6 +1,8 @@
 from django.db import models
 from django.conf import settings
 
+from random import shuffle
+
 # requires package django-annoying to be installed:
 # https://github.com/skorokithakis/django-annoying#readme
 # from annoying.fields import AutoOneToOneField
@@ -73,10 +75,28 @@ class Question(models.Model):
     ## special field for retrieving previously created questions:
     ukey = models.CharField(max_length=100, null=True)
 
+    def get_answers(self):
+        # print("called")
+        wronganswers = self.wronganswer_set.all()
+        if wronganswers:
+            right_answers = list(self.answer_set.all())
+            wrong_answers = list(wronganswers)
+            answers = right_answers + wrong_answers
+            shuffle(answers)
+            return answers
+        else:
+            return None
+        # return ["method called"]
 
 class Answer(models.Model):
     question_id = models.ForeignKey(Question,
     on_delete=models.SET_NULL, null=True)
+    answer_text = models.CharField(max_length=300)
+
+
+class WrongAnswer(models.Model):
+    question = models.ForeignKey(Question,
+    on_delete=models.CASCADE, null=True)
     answer_text = models.CharField(max_length=300)
 
 

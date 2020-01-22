@@ -86,6 +86,26 @@ var changeAttachment = function(selector, attachment_id) {
     attachment.innerHTML = new_value;
 };
 
+var make_multiple = function(multipleButton) {
+    console.log("entered function make_multiple()");
+    sec_quest_id = multipleButton.name.split('_');
+    sec_id = sec_quest_id[1];
+    quest_id = sec_quest_id[2];
+    question_div_id = "qform_"+sec_id+"_"+quest_id;
+    question_div = document.getElementById(question_div_id);
+    if (multipleButton.checked == true) {
+        console.log("checkbox checked");
+        wrong_answer_div = document.createElement("div");
+        wrong_answer_div.id = "wrong_answers_"+sec_id+"_"+quest_id
+        wrong_answer_div.innerHTML += '<b>Wrong answers</b>: <input type="text" name="wrong_'+sec_id+'_'+quest_id+'">';
+        insertAfter(wrong_answer_div, question_div);
+    } else {
+        // туть удаляем это поле;
+        console.log("checkbox not checked");
+        wrong_answer_div = document.getElementById("wrong_answers_"+sec_id+"_"+quest_id)
+        delete_elem(wrong_answer_div);
+    }
+}
 
 var addSimpleQuestionForm = function(addButton, section_id) {
     prev_sibl = addButton.previousElementSibling;
@@ -113,8 +133,9 @@ var addSimpleQuestionForm = function(addButton, section_id) {
     a_text.cols = 30;
     a_text.rows = 1;
     a_text.name = "atext_"+section_id+"_"+curr_id;
-    simple_form.innerHTML += '<button type="button" onclick="del_qform('+section_id+','+curr_id+')">Delete</button>'
+    simple_form.innerHTML += '<button type="button" onclick="del_qform('+section_id+','+curr_id+')">Delete</button>';
     simple_form.innerHTML += '<input type="checkbox" name="sequence_'+section_id+'_'+curr_id+'"> Multiple letters';
+    simple_form.innerHTML += '<input type="checkbox" name="multiple_'+section_id+'_'+curr_id+'" onchange="make_multiple(this)"> Multiple Choice question';
 };
 
 var aud_preview = function(e){

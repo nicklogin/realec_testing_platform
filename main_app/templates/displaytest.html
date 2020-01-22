@@ -32,29 +32,48 @@
                             <!-- Name of the section: -->
                             <h1>{{ test_section.name }}</h1>
                             {% if test_section.supplement.url is not None %}
-                            <div class="equalCols">
-                                <div class="section-text">
-                                    <!-- Text of the section -->
-                                    {{ test_section.text }}
-                                </div>
-                                <div>
-                                    <!-- Supplement for the section -->
-                                    {% if test_section.section_type == "r" %}
-                                        <embed src="{{ test_section.supplement.url }}" type="application/pdf" style="height: 100%; width: 100%;">
-                                        </embed>
-                                    {% endif %}
-                                </div>
-                            </div>
-                            <br />
-                            <div style="max-height:300px; overflow: scroll;">
-                                <b>Answer sheet:</b><br />
-                                {% for question in test_section.question_set.all %}
-                                    <div>
-                                    <b>{{ question.question_text }}</b>
-                                    <textarea name="question_{{ question.id }}" cols="50" row="1"></textarea>
+                                <div class="equalCols">
+                                    <div class="section-text">
+                                        <!-- Text of the section -->
+                                        {{ test_section.text }}
                                     </div>
-                                {% endfor %}
-                            </div>
+                                    <div>
+                                        <!-- Supplement for the section -->
+                                        {% if test_section.section_type == "r" %}
+                                            <embed src="{{ test_section.supplement.url }}" type="application/pdf" style="height: 100%; width: 100%;">
+                                            </embed>
+                                        {% elif test_section.section_type == "l" %}
+                                            <!-- This is a listrning section -->
+                                            {% if request.session.rights == 'A' or request.session.rights == 'T' %}
+                                                <!-- You're a admin or teacher -->
+                                                {% if test_section.supplement is not None %}
+                                                    <!-- Supplement FileField is not None -->
+                                                    <audio controls id="sound_{{ test_section.id }}" src="{{ test_section.supplement.url }}">
+                                                        Your browser does not support the <code>audio</code> element.
+                                                    </audio>
+                                                {% endif %}
+                                            {% endif %}
+                                        {% else %}
+                                            Section type: {{ test_section.section_type }}
+                                        {% endif %}
+                                    </div>
+                                </div>
+                                <br />
+                                <div style="max-height:300px; overflow: scroll;">
+                                    <b>Answer sheet:</b><br />
+                                    {% for question in test_section.question_set.all %}
+                                        <div>
+                                        <b>{{ question.question_text }}</b>
+                                            {% if question.get_answers %}
+                                                {% for answer in question.get_answers %}
+                                                    <input type="radio" name="question_{{ question.id }}" value="{{ answer.answer_text }}"> {{ answer.answer_text }}</input>
+                                                {% endfor %}
+                                            {% else %}
+                                                <textarea name="question_{{ question.id }}" cols="50" row="1"></textarea>
+                                            {% endif %}
+                                        </div>
+                                    {% endfor %}
+                                </div>
                             {% else %}
                             <div class="equalCols">
                                 <div class="section-text">
@@ -66,7 +85,17 @@
                                     {% for question in test_section.question_set.all %}
                                         <div>
                                         <b>{{ question.question_text }}</b>
-                                        <textarea name="question_{{ question.id }}" cols="50" row="1"></textarea>
+                                        <br />
+                                        {% if question.get_answers %}
+                                            {% for answer in question.get_answers %}
+                                                <input type="radio" name="question_{{ question.id }}" value="{{ answer.answer_text }}">
+                                                    {{ answer.answer_text }}
+                                                </input>
+                                                <br />
+                                            {% endfor %}
+                                        {% else %}
+                                            <textarea name="question_{{ question.id }}" cols="50" row="1"></textarea>
+                                        {% endif %}
                                         </div>
                                     {% endfor %}
                                 </div>
