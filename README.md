@@ -5,13 +5,6 @@
  - mysqlclient для Python36 отсюда: https://www.lfd.uci.edu/~gohlke/pythonlibs/#mysqlclient
  - django-annoying для Python36: https://github.com/skorokithakis/django-annoying
 
-Туториал по MySQL:
-http://www.ntu.edu.sg/home/ehchua/programming/sql/mysql_howto.html
-
-
-Туториал по Django, пройти тем кто не знаком с Django скорее обязательно:
-https://docs.djangoproject.com/en/2.1/intro/
-
 
 
 Для того, чтобы соединиться с базой данных на локалхосте, нужно создать
