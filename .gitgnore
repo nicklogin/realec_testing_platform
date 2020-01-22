@@ -9,3 +9,4 @@ trash/
 ve_win/
 ve/
 localbase
+__pycache__
