@@ -428,7 +428,7 @@ def show_results(request):
     else:
         return HttpResponse('You are not logged in as a teacher or admin. <a href="/login/">Login here</a>')
 
-def quiz_grades(request, quiz_id):
+def quiz_grades(request, quiz_id, download=False):
     ## to do -
     ## по умолчанию показывать только ответы студентов
     ## добавить возможность фильтрации ответов по группам студентов
@@ -445,12 +445,31 @@ def quiz_grades(request, quiz_id):
                 marks[student] = quiz_results.filter(student=student).aggregate(Avg('mark'))['mark__avg']
             marks = [(student.login, student.full_name, get_group(student), round(marks[student], 2)) for student in sorted(marks,
             key=lambda x: -marks[x])]
-            return render(request, 'quiz_results_bootstrap.html', {'marks': marks,
-            'quiz_name': quiz.name, 'quiz_id': quiz.id})
+            if download:
+                df = pd.DataFrame([i[1:] for i in marks],
+                                 columns=('Full name', 'Group', 'Overall score'))
+                stream = BytesIO()
+                ExcelWriter = pd.ExcelWriter(stream, engine='openpyxl')
+                df.to_excel(ExcelWriter)
+                ExcelWriter.save()
+                stream.seek(0)
+                spreadsheet = stream.getvalue()
+                response = HttpResponse(spreadsheet, content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+                fn = quiz.name
+                response['Content-Disposition'] = f'attachment; filename="{fn}"".xlsx'
+                return response
+            else:
+                download_url = f"/grades/{quiz_id}/download"
+                return render(request, 'quiz_results_bootstrap.html', {'marks': marks,
+                'quiz_name': quiz.name, 'quiz_id': quiz.id,
+                'download_url': download_url})
         else:
             return HttpResponse('You are not logged in as a teacher or admin. <a href="/login/">Login here</a>')
     else:
         return HttpResponse('You are not logged in as a teacher or admin. <a href="/login/">Login here</a>')
+
+def download_grades(request, quiz_id):
+    return quiz_grades(request, quiz_id, download=True)
 
 def student_answers(request, quiz_id, student_id, download=False):
     if request.session["rights"] in ("T", "A"):

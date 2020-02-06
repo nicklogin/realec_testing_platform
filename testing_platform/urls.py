@@ -40,6 +40,7 @@ urlpatterns = [
     path('easy_register/', views.easy_register, name="easy_register"),
     path('grades/', views.show_results, name="show_results"),
     path('grades/<int:quiz_id>', views.quiz_grades, name="quiz_grades"),
+    path('grades/<int:quiz_id>/download', views.download_grades, name="download_grades"),
     path('grades/<int:quiz_id>/<str:student_id>', views.student_answers, name="student_answers"),
     path('grades/<int:quiz_id>/<str:student_id>/download', views.download_answers, name="download_answers"),
     path('addQuestions/<int:quiz_id>', views.add_questions, name="add_questions"),
