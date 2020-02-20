@@ -789,11 +789,6 @@ def edit_ielts_test(request, test_id=None):
                                     question_type="ielts_question",
                                     question_level=0, section=section)
                         q_id = question_field.split('_')[-1]
-
-                        if "insensitive_"+new_section_id+"_"+q_id in request.POST:
-                            q.case_insensitive = True
-                        q.save()
-
                         if "sequence_"+new_section_id+"_"+q_id in request.POST:
                             q.question_type = "ielts_multiple"
                         q.save()
@@ -858,7 +853,6 @@ def check_multiple(answer, right_answers):
 
 
 def check_answers(answers, question_ids, session):
-    question_ids = sorted(question_ids)
     questions = Question.objects.filter(id__in=question_ids).order_by('id')
     right_answers = [(ans.answer_text, ans.question_id.id) for ans in Answer.objects.filter(question_id__id__in = question_ids)]
 
@@ -870,16 +864,10 @@ def check_answers(answers, question_ids, session):
         if question.question_type == "ielts_multiple":
             check_sheet.append(check_multiple(answer, right_answers[qid]))
         else:
-            if question.case_insensitive:
-                if answer.strip().lower() in [i.strip().lower() for i in right_answers[qid]]:
-                    check_sheet.append(1.0)
-                else:
-                    check_sheet.append(0.0)
+            if answer.strip() in [i.strip() for i in right_answers[qid]]:
+                check_sheet.append(1.0)
             else:
-                if answer.strip() in [i.strip() for i in right_answers[qid]]:
-                    check_sheet.append(1.0)
-                else:
-                    check_sheet.append(0.0)
+                check_sheet.append(0.0)
     
     user = User.objects.get(login = session["user_id"])
 
@@ -923,7 +911,9 @@ def take_ielts_test(request, test_id):
             # task_set = [(section.name, section.text, section.supplement, section.section_type, 
             # section.question_set.all()) for section in sections]
             # print(task_set)
+
             return render(request, "displaytest.html", {"task_set": sections})
+        
     return HttpResponse('You are not logged in as a teacher or admin. <a href="/login/">Login here</a>')
 
 def full_grade(test):

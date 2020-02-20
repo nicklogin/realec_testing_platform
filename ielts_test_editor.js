@@ -135,7 +135,6 @@ var addSimpleQuestionForm = function(addButton, section_id) {
     a_text.rows = 1;
     a_text.name = "atext_"+section_id+"_"+curr_id;
     simple_form.innerHTML += '<button type="button" onclick="del_qform('+section_id+','+curr_id+')">Delete</button>';
-    simple_form.innerHTML += '<input type="checkbox" name="insensitive_'+section_id+'_'+curr_id+'"> Case insensitive';
     simple_form.innerHTML += '<input type="checkbox" name="sequence_'+section_id+'_'+curr_id+'"> Multiple letters';
     simple_form.innerHTML += '<input type="checkbox" name="multiple_'+section_id+'_'+curr_id+'" onchange="make_multiple(this)"> Multiple Choice question';
 };

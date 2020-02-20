@@ -67,6 +67,7 @@ class Question(models.Model):
     error_tag = models.CharField(max_length=45, null=True)
     folder = models.ManyToManyField(Folder, blank=True)
     section = models.ForeignKey(Section, null=True, on_delete=models.SET_NULL)
+    case_insensitive = models.BooleanField(default=False)
     # folder_addr = models.CharField(max_length=45, null=True)
     # essay_addr = models.CharField(max_length=45, null=True)
     # question_group = models.CharField(max_length=45, null=True)
