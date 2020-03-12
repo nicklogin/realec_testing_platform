@@ -53,12 +53,31 @@
                                                     </audio>
                                                 {% endif %}
                                             {% endif %}
+                                            <div style="max-height:640px; overflow: scroll;">
+                                                <b>Answer sheet:</b><br />
+                                                {% for question in test_section.question_set.all %}
+                                                    <div>
+                                                    <b>{{ question.question_text }}</b>
+                                                    <br />
+                                                        {% if question.get_answers %}
+                                                            {% for answer in question.get_answers %}
+                                                                <input type="radio" name="question_{{ question.id }}" value="{{ answer.answer_text }}"> {{ answer.answer_text }}</input>
+                                                                <br />
+                                                            {% endfor %}
+                                                        {% else %}
+                                                            <textarea name="question_{{ question.id }}" cols="50" row="1"></textarea>
+                                                        {% endif %}
+                                                    </div>
+                                                {% endfor %}
+                                            </div>
                                         {% else %}
                                             Section type: {{ test_section.section_type }}
                                         {% endif %}
+                                        <br>
                                     </div>
                                 </div>
                                 <br />
+                                {% if test.section_type == "r" %}
                                 <div style="max-height:300px; overflow: scroll;">
                                     <b>Answer sheet:</b><br />
                                     {% for question in test_section.question_set.all %}
@@ -76,6 +95,7 @@
                                         </div>
                                     {% endfor %}
                                 </div>
+                                {% endif %}
                             {% else %}
                             <div class="equalCols">
                                 <div class="section-text">

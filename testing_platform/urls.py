@@ -56,7 +56,8 @@ urlpatterns = [
     path('IELTSgrades/<int:test_id>/<str:student_id>', views.student_test_results, name="student_test_results"),
     path('IELTSgrades/<int:test_id>/<str:student_id>/download', views.download_ielts_results, name="download_ielts_results"),
     path('fromFolder/', views.questions_from_folder, name='questions_from_folder'),
-    path('testAjax/', views.test_ajax, name="test_ajax")
+    path('testAjax/', views.test_ajax, name="test_ajax"),
+    path('deleteIELTSTest/', views.delete_test, name="delete_test")
 ]
 
 # path('questions/<str:err_type>', views.display_questions, name="display_questions"),

@@ -20,7 +20,9 @@
           <a class="btn btn-outline-primary" href="/login">Log Out</a>
         </div>
 
+        {% autoescape off %}
         <div class="container-fluid">
+            <div style="display: none" id="token">{{ csrf_token }}</div>
             <div class = "main">
               <div>
                 <h1> Available IELTS tests </h1>
@@ -31,9 +33,14 @@
                     {% endfor %}
                     {% else %}
                         {% for quiz in quizlist %}
-                            <li> <b>Quiz "{{ quiz.0 }}"</b> <a href="/editIELTS/{{ quiz.1 }}"> Edit</a> <a href="/takeIELTSTest/{{ quiz.1 }}"> Preview</a>
+                        <div id="test_{{ quiz.1 }}" name="{{ quiz.0 }}">
+                            <li> <b>Quiz "{{ quiz.0 }}"</b>
+                            <a href="/editIELTS/{{ quiz.1 }}"> Edit</a> 
+                            <a href="/takeIELTSTest/{{ quiz.1 }}"> Preview</a>
                             <a href="/IELTSgrades/{{ quiz.1 }}"> Results</a>
-                                </li>
+                            <span class="fakeLink" onclick="deleteTest({{ quiz.1 }}, '{{ quiz.0 }}')"> Delete </a>
+                            </li>
+                        </div>
                         {% endfor %}
                     {% endif %}
                 </ul>
@@ -41,5 +48,7 @@
               </div>
             </div>
         </div>
+        {% endautoescape %}
     </body>
+    <script type="text/javascript" src="{% static "ielts_test_manager.js" %}"></script>
 </html>

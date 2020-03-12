@@ -1024,6 +1024,16 @@ def student_test_results(request, test_id, student_id, download=False):
 def download_ielts_results(request, test_id, student_id):
     return student_test_results(request, test_id, student_id, download=True)
 
+def delete_test(request):
+    if "rights" in request.session:
+        if request.session['rights'] in ('A', 'T'):
+            if 'test_id' in request.POST:
+                test_id = request.POST["test_id"]
+                test = IELTS_Test.objects.get(id=test_id)
+                test.delete()
+                return HttpResponse("OK")
+    return HttpResponseForbidden()
+
 ## Don't need that, as TinyMCE byte-encodes images automatically:
 # def img_upload(request):
 #     ## Used for Image uploads in TinyMCE editor
