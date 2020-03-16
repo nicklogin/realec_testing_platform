@@ -47,10 +47,12 @@
                                                     <div class="mx-2">
                                                     <b>{{ question.question_text }}</b>
                                                         {% if question.get_answers %}
+                                                            <br />
                                                             {% for answer in question.get_answers %}
                                                                 <input type="radio" name="question_{{ question.id }}" value="{{ answer.answer_text }}">
                                                                     {{ answer.answer_text }}
                                                                 </input>
+                                                                <br />
                                                             {% endfor %}
                                                         {% else %}
                                                             <input type="text" class="form-control form-control-sm" name="question_{{ question.id }}" cols="50" row="1">
@@ -85,10 +87,12 @@
                                                         <div class="mx-2">
                                                         <b>{{ question.question_text }}</b>
                                                             {% if question.get_answers %}
+                                                                <br />
                                                                 {% for answer in question.get_answers %}
                                                                     <input type="radio" name="question_{{ question.id }}" value="{{ answer.answer_text }}">
                                                                         {{ answer.answer_text }}
                                                                     </input>
+                                                                    <br />
                                                                 {% endfor %}
                                                             {% else %}
                                                                 <input type="text" class="form-control form-control-sm" name="question_{{ question.id }}" cols="50" row="1">
@@ -117,10 +121,12 @@
                                             <div class="mx-2">
                                             <b>{{ question.question_text }}</b>
                                                 {% if question.get_answers %}
+                                                    <br />
                                                     {% for answer in question.get_answers %}
                                                         <input type="radio" name="question_{{ question.id }}" value="{{ answer.answer_text }}">
                                                             {{ answer.answer_text }}
                                                         </input>
+                                                        <br />
                                                     {% endfor %}
                                                 {% else %}
                                                     <input type="text" class="form-control form-control-sm" name="question_{{ question.id }}" cols="50" row="1">

@@ -67,8 +67,13 @@
                                 <b>PDF Upload:</b> <br />
                                 <input type="file" name="pdf_upload_{{ test_section.id }}" id="pdf_input_{{ test_section.id }}" onchange="pdf_preview(this)">
                                 </input>
+                                {% if test_section.supplement.url is not None %}
                                 <embed id="book_{{ test_section.id }}" type="application/pdf" style="height: 90%; width: 100%;" src="{{ test_section.supplement.url }}"controls>
                                 </embed>
+                                {% else %}
+                                <embed id="book_{{ test_section.id }}" type="application/pdf" style="height: 90%; width: 100%;" controls>
+                                </embed>
+                                {% endif %}
                                 <br />
                                 <br />
                               </div>
@@ -86,8 +91,13 @@
                                 <b>MP3 Upload:</b> <br />
                                 <input type="file" name="audio_upload_{{ test_section.id }}" id="aud_input_{{ test_section.id }}" onchange="aud_preview(this)">
                                 </input>
+                                {% if test_section.supplement.url is not None %}
                                 <audio id="sound_{{ test_section.id }}" src="{{ test_section.supplement.url }}" controls>
                                 </audio>
+                                {% else %}
+                                <audio id="sound_{{ test_section.id }}" controls>
+                                </audio>
+                                {% endif %}
                                 <br />
                                 <br />
                               </div>
@@ -114,7 +124,7 @@
                                 {% if question.get_wrong_answers_text %}
                                   <input type="checkbox" name="multiple_{{ test_section.id }}_{{ question.id }}" onchange="make_multiple(this)" checked="checked"> Multiple Choice question
                                   <div id="wrong_answers_{{ test_section.id }}_{{ question.id }}">
-                                    <br /><b>Wrong answers</b>: <input type="text" name="wrong_{{ test_section.id }}_{{ question.id }}" value="{{ question.get_wrong_answers_text }}">
+                                    <b>Wrong answers</b>: <input type="text" name="wrong_{{ test_section.id }}_{{ question.id }}" value="{{ question.get_wrong_answers_text }}"><br /><br />
                                   </div>
                                 {% else %}
                                   <input type="checkbox" name="multiple_{{ test_section.id }}_{{ question.id }}" onchange="make_multiple(this)"> Multiple Choice question

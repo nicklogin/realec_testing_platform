@@ -129,7 +129,7 @@ var make_multiple = function(multipleButton) {
         // console.log("checkbox checked");
         wrong_answer_div = document.createElement("div");
         wrong_answer_div.id = "wrong_answers_"+sec_id+"_"+quest_id
-        wrong_answer_div.innerHTML += '<br /><b>Wrong answers</b>: <input type="text" name="wrong_'+sec_id+'_'+quest_id+'">';
+        wrong_answer_div.innerHTML += '<b>Wrong answers</b>: <input type="text" name="wrong_'+sec_id+'_'+quest_id+'"><br /><br />';
         // question_div.appendChild(document.createElement("br"));
         question_div.appendChild(wrong_answer_div);
     } else {
