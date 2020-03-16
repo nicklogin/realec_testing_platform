@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+{% load static %}
+<html>
+    <head>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+        <script type="text/javascript" src="{% static "tinymce/js/tinymce/tinymce.min.js" %}"></script>
+        <script type="text/javascript" src="{% static "ielts_test_editor.js" %}"></script>
+        <!-- <script>
+            tinymce.init({
+                selector: 'textarea',
+                paste_data_images: true,
+                image_upload_url: "/imgUpload",
+                automatic_uploads: true,
+                plugins: [
+        "advlist autolink lists link image charmap print preview anchor",
+        "searchreplace visualblocks code fullscreen",
+        "insertdatetime media table contextmenu paste"
+    ],
+	paste_data_images: true,
+    toolbar: "insertfile undo redo | styleselect | bold italic | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent | link image"
+            });
+        </script> -->
+        <link href="{% static "basic.css" %}" rel="stylesheet" />
+    </head>
+    <body>
+        <div class="main">
+            <div class="mainarea">
+                <div class="navbar">
+                    <li><a href="/quizzes">Quizzes</a></li>
+                    <li><a href="/grades">Grades</a></li>
+                    <li><a href="/questions">Questions</a></li>
+                    <li><a href="/users">Users</a></li>
+                    <li><a href="/IELTS">IELTS</a></li>
+                    <li><a href="/login">Log Out</a></li>
+                </div>
+            <div>
+                <form method="POST" enctype="multipart/form-data">
+                <b>Input test name:</b> <input type="text" name="testName">
+                {% autoescape off %}
+                <input type="hidden" id="csrf_token" name="csrfmiddlewaretoken" value="{{ csrf_token }}">
+                <div id="sections">
+                    {% for test_section in test_sections %}
+                    <div id="test_section_{{ test_section.id }}">
+                        <input type="text" name="sec_name_{{ test_section.id }}" value="{{ test_section.name }}">
+                        <b>Type:</b>
+                        <select name="section-type_{{ test_section.id }}" onchange="changeAttachment(this, '+att_id_embed+')">
+                            <option value="r"> Reading </option>
+                            <option value="l"> Listening</option>
+                        </select>
+                        <button type="button" onclick="delete_elem(this.parentNode)">Delete section</button>
+                        <br />
+                        <br />
+                    </div>
+                    {% endfor %}
+                </div>
+                {% endautoescape %}
+                <br />
+                <button type="button" onclick="addSection()">Add section</button>
+                <!-- <button type="button" onclick="testAjaxPost('{{ csrf_token }}')">Test AJAX POST Request</button> -->
+                <button>Save</button>
+                </form>
+            </div>
+        </div>
+    </body>
+</html>

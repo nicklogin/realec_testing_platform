@@ -757,6 +757,117 @@ def edit_ielts_test(request, test_id=None):
                     Test = IELTS_Test(name=request.POST["testName"])
                     Test.save()
                 ## Saving newly added questions to db:
+                # print(request.POST)
+                ## modifying existing sections:
+                section_ids = [field for field in request.POST if field.startswith('section_') and not field.startswith('section_-')]
+                for section_field in section_ids:
+                    section_id = int(section_field.split('_')[1])
+                    section = Section.objects.get(id=section_id)
+                    section.text = request.POST[section_field]
+                    section.name = request.POST[f"sec_name_{ section_id }"]
+                    ## Working with attachment to the section:
+                    section_type = request.POST[f"section-type_{ section_id }"]
+                    if section_type != section.section_type:
+                        if section_type == 'r':
+                            section.section_type = section_type
+                            if "pdf_upload_"+section_id in request.FILES:
+                                section.attachment = request.FILES["pdf_upload_"+new_section_id]
+                            else:
+                                section.attachment = None
+                        elif section_type == 'l':
+                            section.section_type = section_type
+                            if "audio_upload_"+section_id in request.FILES:
+                                section.attachment = request.FILES["audio_upload_"+new_section_id]
+                            else:
+                                section.attachment = None
+                        else:
+                            raise Exception(f"Invalid attachment type - {section_type}")
+                    ## If section type is unchanged,
+                    ## changing file attachment only if a new file was attached:
+                    else:
+                        if section_type == 'r':
+                            if f"pdf_upload_{ section_id }" in request.FILES:
+                                if request.FILES[f"pdf_upload_{ section_id }"]:
+                                    section.attachment = request.FILES[f"pdf_upload_{ section_id }"]
+                        elif section_type == 'l':
+                            if f"audio_upload_{ section_id }" in request.FILES:
+                                if request.FILES[f"audio_upload_{ section_id }"]:
+                                    section.attachment = request.FILES[f"audio_upload_{ section_id }"]
+                    section.save()
+                    ## Working with question fields:
+                    ## Working with questions that previously existed:
+                    question_fields = [field for field in request.POST if field.startswith(f"qtext_{section.id}") and not field.startswith(f"qtext_{section.id}_-")]
+                    for question_field in question_fields:
+                        q_id = int(question_field.split('_')[-1])
+                        q = Question.objects.get(id=q_id)
+
+                        if f"insensitive_{ section_id }_{ q_id }" in request.POST:
+                            q.case_insensitive = True
+                        q.save()
+
+                        if f"sequence_{section_id}_{q_id}" in request.POST:
+                            q.question_type = "ielts_multiple"
+                        q.save()
+
+                        ## Deleting previous answers:
+                        Answer.objects.filter(question_id=q).delete()
+                        WrongAnswer.objects.filter(question_id=q).delete()
+                        
+                        ## Writing new answers:
+                        answers = request.POST[f'atext_{section_id}_{q_id}'].split(";")
+                        for ans in answers:
+                            a = Answer(question_id=q, answer_text=ans)
+                            a.save()
+
+                        multiple_key = f'wrong_{section_id}_{q_id}'
+
+                        if multiple_key in request.POST:
+                            wrong_answers = request.POST[multiple_key].split(";")
+                            
+                            wAnswers = [WrongAnswer(question=q, answer_text=wAnswer) for wAnswer in wrong_answers]
+                            WrongAnswer.objects.bulk_create(wAnswers)
+                    ## recheck results for modified questions:
+                    question_ids = [int(i.split('_')[-1]) for i in question_fields]
+                    recheck_answers(Results.objects.filter(question__id__in=question_ids))
+                    ## Working with newly added questions:
+                    question_fields = [field for field in request.POST if field.startswith(f"qtext_{section.id}_-")]
+                    for question_field in question_fields:
+                        q = Question(question_text=request.POST[question_field],
+                                    question_type="ielts_question",
+                                    question_level=0, section=section)
+                        q_id = question_field.split('_')[-1]
+
+                        if f"insensitive_{section_id}_{q_id}" in request.POST:
+                            q.case_insensitive = True
+                        q.save()
+
+                        if f"sequence_{section_id}_{q_id}" in request.POST:
+                            q.question_type = "ielts_multiple"
+                        q.save()
+                        
+                        answers = request.POST[f"atext_{section_id}_{q_id}"].split(";")
+                        for ans in answers:
+                            a = Answer(question_id=q, answer_text=ans)
+                            a.save()
+
+                        multiple_key = f'wrong_{section_id}_{q_id}'
+
+                        if multiple_key in request.POST:
+                            wrong_answers = request.POST[multiple_key].split(";")
+                            
+                            wAnswers = [WrongAnswer(question=q, answer_text=wAnswer) for wAnswer in wrong_answers]
+                            WrongAnswer.objects.bulk_create(wAnswers)
+                ## deleting sections selected to delete:
+                if "secs_to_delete" in request.POST:
+                    delete_ids = [int(i) for i in request.POST["secs_to_delete"].split(';') if i]
+                    secs_to_delete = Section.objects.filter(id__in=delete_ids)
+                    secs_to_delete.delete()
+                ## deleting questions selected to delete:
+                if "questions_to_delete" in request.POST:
+                    delete_ids = [int(i) for i in request.POST["questions_to_delete"].split(';') if i]
+                    questions_to_delete = Question.objects.filter(id__in=delete_ids)
+                    questions_to_delete.delete()
+                ## adding new sections:
                 new_section_ids = [field for field in request.POST if field.startswith('section_-')]
                 for new_section in new_section_ids:
                     new_section_text = request.POST[new_section]
@@ -813,17 +924,20 @@ def edit_ielts_test(request, test_id=None):
                     
                 Test.full_grade = full_grade(Test)
                 Test.save()
-                
-                ## Editing existing sections in db:
-                    
+                                    
                 return redirect("ielts_test_list")
             else:
                 if test_id:
                     test = IELTS_Test.objects.get(id=test_id)
-                    sections = Section.objects.filter(ielts_test=test)
-                    test_sections = [(sec.id, get_section_contents(sec.id)) for sec in sections]
+                    test_sections = Section.objects.filter(ielts_test=test)
+                    test_name = test.name
+                    # for sec in test_sections:
+                    #     sec.text = sec.text.replace('\n','\\\n')
                 else:
-                    return render(request, "new_ielts_test_bootstrap.html", {'test_sections': []})
+                    test_sections = []
+                    test_name = ''
+                return render(request, "new_ielts_test_bootstrap.html", {'test_sections': test_sections,
+                                                                         'test_name': test_name})
     return HttpResponse('You are not logged in as a teacher or admin. <a href="/login/">Login here</a>')
 
 def ielts_test_list(request):
@@ -923,7 +1037,7 @@ def take_ielts_test(request, test_id):
             # task_set = [(section.name, section.text, section.supplement, section.section_type, 
             # section.question_set.all()) for section in sections]
             # print(task_set)
-            return render(request, "displaytest.html", {"task_set": sections})
+            return render(request, "displaytest1.html", {"task_set": sections})
     return HttpResponse('You are not logged in as a teacher or admin. <a href="/login/">Login here</a>')
 
 def full_grade(test):

@@ -19,7 +19,17 @@ var delete_elem = function(elem) {
     elem.parentNode.removeChild(elem);
 };
 
-var delete_section = function(section_id) {};
+var delete_section = function(sectionNode) {
+    section_id = sectionNode.id.split("_").pop();
+    document.getElementById("secs_to_delete").value += ';'+section_id;
+    delete_elem(sectionNode);
+};
+
+var delete_question = function(questionNode) {
+    question_id = questionNode.id.split("_").pop();
+    document.getElementById("questions_to_delete").value += ';'+question_id;
+    delete_elem(questionNode);
+};
 
 var del_qform = function(section_id, q_id) {
     qform = document.getElementById("qform_"+section_id+"_"+q_id);
@@ -46,6 +56,27 @@ var addMCE = function(elem_id, height=456) {
     });
 };
 
+var addMCEWithContent = function(elem_id, html_text, height=456) {
+    // elem = document.getElementById(elem_id);
+    tinymce.init({
+        selector: 'textarea#'+elem_id,
+        paste_data_images: true,
+        // image_upload_url: "/imgUpload",
+        automatic_uploads: true,
+        plugins: [
+        "advlist autolink lists link image charmap print preview anchor",
+        "searchreplace visualblocks code fullscreen",
+        "insertdatetime media table contextmenu paste"
+        ],
+        toolbar: "insertfile undo redo | styleselect | bold italic | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent | link image",
+        setup: function (editor) {
+            editor.on('init', function () {
+              editor.setContent(html_text);
+            });
+        }
+    });
+};
+
 var allMCEs = function() {
     tinymce.init({
         selector: 'textarea',
@@ -62,6 +93,7 @@ var allMCEs = function() {
 }
 
 var changeAttachment = function(selector, attachment_id) {
+    console.log(attachment_id)
     attachment = document.getElementById(attachment_id);
     att_id = attachment_id.split('_').pop();
     if (selector.value == 'l') {
@@ -94,15 +126,15 @@ var make_multiple = function(multipleButton) {
     question_div_id = "qform_"+sec_id+"_"+quest_id;
     question_div = document.getElementById(question_div_id);
     if (multipleButton.checked == true) {
-        console.log("checkbox checked");
+        // console.log("checkbox checked");
         wrong_answer_div = document.createElement("div");
         wrong_answer_div.id = "wrong_answers_"+sec_id+"_"+quest_id
-        wrong_answer_div.innerHTML += '<b>Wrong answers</b>: <input type="text" name="wrong_'+sec_id+'_'+quest_id+'">';
-        question_div.appendChild(document.createElement("br"));
+        wrong_answer_div.innerHTML += '<br /><b>Wrong answers</b>: <input type="text" name="wrong_'+sec_id+'_'+quest_id+'">';
+        // question_div.appendChild(document.createElement("br"));
         question_div.appendChild(wrong_answer_div);
     } else {
         // туть удаляем это поле;
-        console.log("checkbox not checked");
+        // console.log("checkbox not checked");
         wrong_answer_div = document.getElementById("wrong_answers_"+sec_id+"_"+quest_id)
         delete_elem(wrong_answer_div);
     }
@@ -177,7 +209,7 @@ var addSection = function() {
     new_name = "section_" + sec_id;
     att_id = "attachment_" + sec_id;
     att_id_embed = "'" + att_id + "'";
-    newSection.className = "section";
+    // newSection.className = "section";
     sections.appendChild(newSection);
     newSection.innerHTML += '<b>Name:</b> <input type="text" name="sec_name_'+sec_id+'">\
     <b>Type:</b>\

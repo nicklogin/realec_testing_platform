@@ -88,6 +88,14 @@ class Question(models.Model):
         else:
             return None
         # return ["method called"]
+    
+    def get_wrong_answers_text(self):
+        wronganswers = self.wronganswer_set.all()
+        return ';'.join([i.answer_text for i in wronganswers])
+    
+    def get_right_answers_text(self):
+        rightanswers = self.answer_set.all()
+        return ';'.join([i.answer_text for i in rightanswers])
 
 class Answer(models.Model):
     question_id = models.ForeignKey(Question,
