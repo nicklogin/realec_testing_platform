@@ -12,8 +12,6 @@ import io
 import html
 from . import wordforms
 from .hierarchy import hierarchy
-
-from tqdm import tqdm_notebook
    
 
 """Script that generates grammar exercises from REALEC data 
@@ -231,8 +229,7 @@ class Exercise:
      ann = None, text = None, error_types = [], bold = False, context = False, mode = 'folder',
       maintain_log = True, show_messages = True, use_ram=False,output_file_names = None,
       file_output = True, write_txt = False, keep_processed = True, hier_choice = False, moodle_output = True,
-      make_two_variants = False, exclude_repeated = False, include_smaller_mistakes = False, file_prefix = os.getcwd()+os.sep,
-      keep_all_exercises = False):
+      make_two_variants = False, exclude_repeated = False, include_smaller_mistakes = False, file_prefix = os.getcwd()+os.sep):
 
         """"
         :param error_types: list of str, can include values from
@@ -332,7 +329,6 @@ class Exercise:
         if not self.use_ram:
             os.makedirs(self.file_prefix+'processed_texts', exist_ok=True)
         self.wf_dictionary = wordforms.wordforms  # {'headword':[words,words,words]}
-        self.keep_all_exercises = keep_all_exercises
 
     def find_errors_indoc(self, line):
         """
@@ -722,7 +718,7 @@ class Exercise:
         :return: array of good sentences. [ (sentences, [right_answer, ... ]), (...)]
         """
 
-        def build_exercise_text(text, answers, ex_type, index=None, single_question = False, error_tag = None):
+        def build_exercise_text(text, answers, index=None, single_question = False, error_tag = None):
             # if sent1 and sent3 and self.context: # fixed sentences beginning with a dot
             #     text = correct_all_errors(sent1) + '. ' + new_sent + ' ' + correct_all_errors(sent3) #+ '.'
             # elif sent3 and self.context:
@@ -781,207 +777,163 @@ class Exercise:
             single_error_in_sent = False
             to_skip = False
             if '<<' in sent2:
-                if self.keep_all_exercises and self.exercise_types == ['short_answer']:
-                    error_areas = re.finditer("<<.*?>>", sent2)
-                    for area in error_areas:
+                random.seed(42)
+                ex_type = random.choice(self.exercise_types)
+                if sent2.count('<<') == 1:
+                    if self.make_two_variants:
+                        single_error_in_sent = True
+                    lb = sent2.find('<<')+2
+                    rb = sent2.find('>>')
+                    correction = sent2[lb:rb]
+                    lb -= 2
+                    rb += 2
+                    if correction.count('**') == 5:
+                        right_answer, err_index, err_type, relation, index, wrong = correction.split('**')
+                    else:
+                        print("'"+correction+"'")
+                        continue
+                    new_sent, answers = '', []
+                    if ex_type == 'word_form':
                         try:
-                            right_answer, err_index, err_type, relation, index, wrong = area.group(0).strip('<>').split('**')
-                            new_sent = self.correct_all_errors(sent2[:area.start(0)]) + '<b>' + wrong + '</b>' + self.correct_all_errors(sent2[area.end(0):])
-                            self.c1 += 1
-                            build_exercise_text(new_sent, [right_answer], ex_type='short_answer', error_tag=err_type)
+                            new_sent, answers = self.create_word_form_ex(sent2, wrong, right_answer, lb, rb)
                         except:
-                            print(sent2)
-                else:
-                    random.seed(42)
-                    ex_type = random.choice(self.exercise_types)
-                    if sent2.count('<<') == 1:
-                        if self.make_two_variants:
-                            single_error_in_sent = True
-                        lb = sent2.find('<<')+2
-                        rb = sent2.find('>>')
-                        correction = sent2[lb:rb]
-                        lb -= 2
-                        rb += 2
-                        if correction.count('**') == 5:
-                            right_answer, err_index, err_type, relation, index, wrong = correction.split('**')
-                        else:
-                            print("'"+correction+"'")
-                            continue
-                        new_sent, answers = '', []
-                        if ex_type == 'word_form':
-                            try:
-                                new_sent, answers = self.create_word_form_ex(sent2, wrong, right_answer, lb, rb)
-                            except:
-                                if len(types1) > 0:
-                                    random.seed(42)
-                                    ex_type = random.choice(types1) 
-                                else:
-                                    continue
-                        if ex_type == 'short_answer':
-                            new_sent, answers = self.create_short_answer_ex(sent2, wrong, right_answer, lb, rb)
-                        if ex_type == 'open_cloze':
-                            new_sent, answers = self.create_open_cloze_ex(sent2, wrong, right_answer, lb, rb)
-                    elif sent2.count('<<')>1:
-                        # ## вот здесь работаем с предложениями, где больше одной ошибки
-                        # ## сюда имплементируй иерархию тегов:
-                        n = sent2.count('<<')
-                        new_sent,answers = '',[]
-                        if self.make_two_variants and (ex_type=='short_answer' or ex_type=='multiple_choice'):
-                            new_sent2, answers2 = '',[]
-                        split_sent = sent2.split('<<')
-                        split_sent = [split_arrows(i.split('**')) if '>>' in i else i for i in split_sent ]
-                        if ex_type=='short_answer' or ex_type=='multiple_choice':
-                            if not self.hier_choice:
-                                chosen = random.randint(0,n-1)
-                                if self.make_two_variants:
-                                    other_err_ids = list(range(0,n))
-                                    other_err_ids.pop(chosen)
-                                    random.seed(42)
-                                    chosen2 = random.choice(other_err_ids)
+                            if len(types1) > 0:
+                                random.seed(42)
+                                ex_type = random.choice(types1) 
                             else:
-                                err_types = list(enumerate(split_sent))
-                                err_types = [(i[0],i[1][2]) for i in err_types if type(i[1]) == list]
-                                err_types = sorted(err_types, key = lambda x: self.get_hierarchy(x[1]), reverse = True) ##сортируем порядковые номера (по нахождению в тексте слева направо тегов
-                                ##ошибок в согласии с иерархией тегов ошибок)
-                                chosen = err_types[0][0]
-                                answers = [split_sent[chosen][0]]
-                                if self.make_two_variants:
-                                    if split_sent[chosen][3] == 'Parallel_construction':
-                                        chosen2 = err_types[1][0]
-                                    else:
-                                        chosen2 = -1
-                                        for i in err_types:
-                                            if split_sent[i[0]][3]=='Parallel_construction' and split_sent[i[0]][0]==split_sent[chosen][0]:
-                                                continue
-                                            else:
-                                                chosen2 = i[0]
-                                        if chosen2 == -1:
-                                            if self.exclude_repeated:
-                                                continue
-                                            else:
-                                                chosen2 = err_types[1][0]
-                                    answers2 = [split_sent[chosen2][0]]
+                                continue
+                    if ex_type == 'short_answer':
+                        new_sent, answers = self.create_short_answer_ex(sent2, wrong, right_answer, lb, rb)
+                    if ex_type == 'open_cloze':
+                        new_sent, answers = self.create_open_cloze_ex(sent2, wrong, right_answer, lb, rb)
+                elif sent2.count('<<')>1:
+                    # ## вот здесь работаем с предложениями, где больше одной ошибки
+                    # ## сюда имплементируй иерархию тегов:
+                    n = sent2.count('<<')
+                    new_sent,answers = '',[]
+                    if self.make_two_variants and (ex_type=='short_answer' or ex_type=='multiple_choice'):
+                        new_sent2, answers2 = '',[]
+                    split_sent = sent2.split('<<')
+                    split_sent = [split_arrows(i.split('**')) if '>>' in i else i for i in split_sent ]
+                    if ex_type=='short_answer' or ex_type=='multiple_choice':
+                        if not self.hier_choice:
+                            chosen = random.randint(0,n-1)
+                            if self.make_two_variants:
+                                other_err_ids = list(range(0,n))
+                                other_err_ids.pop(chosen)
+                                random.seed(42)
+                                chosen2 = random.choice(other_err_ids)
                         else:
-                            single_error_in_sent = True
-                                # print(chosen, chosen2)
-                        # split_sent = [{'right_answer':i[0],'err_index':i[1],'err_type':i[2],
-                        # 'relation':i[3],'index':i[4],'wrong':i[5].split('>>')[0], 'other':i[5].split('>>')[1]} if len(i)>1 else i for i in split_sent]
-                        # print(chosen, len(split_sent))
-                        for i in range(len(split_sent)):
-                            if not to_skip:
-                                # sent, right_answer, err_type, relation, index, other = split_sent[i],split_sent[i+1],split_sent[i+2],split_sent[i+3],split_sent[i+4],split_sent[i+5]
-                                if type(split_sent[i]) == list:
-                                    # right_answer,err_index,index,relation,wrong, other = split_sent[i]['right_answer'],split_sent[i]['err_index'],split_sent[i]['index'],split_sent[i]['relation'],split_sent[i]['wrong'],split_sent[i]['other']
-                                    ## вот здесь причина бага с error_type - переменная обновляется на каждой итерации, а не только тогда, когда i == chosen:
-                                    right_answer, err_index, err_type, relation, index, wrong, other = split_sent[i]
+                            err_types = list(enumerate(split_sent))
+                            err_types = [(i[0],i[1][2]) for i in err_types if type(i[1]) == list]
+                            err_types = sorted(err_types, key = lambda x: self.get_hierarchy(x[1]), reverse = True) ##сортируем порядковые номера (по нахождению в тексте слева направо тегов
+                            ##ошибок в согласии с иерархией тегов ошибок)
+                            chosen = err_types[0][0]
+                            answers = [split_sent[chosen][0]]
+                            if self.make_two_variants:
+                                if split_sent[chosen][3] == 'Parallel_construction':
+                                    chosen2 = err_types[1][0]
                                 else:
-                                    new_sent += split_sent[i]
-                                    if self.make_two_variants and (ex_type == 'short_answer' or ex_type == 'multiple_choice'):
-                                        new_sent2 += split_sent[i]
-                                    continue
-                                # print('/'.join([sent, err_index, right_answer, err_type, relation, index, other]))
-                                # input()
-                                # try:
-                                #     index = int(index)
-                                # except:
-                                #     to_skip = True
-                                #     # print('index: ', index)
-                                #     continue
-                                if ex_type == 'open_cloze' or ex_type == 'word_form':
-                                    right_answer, err_index, err_type, relation, index, wrong, other = split_sent[i]
-                                    if ex_type == 'open_cloze':
-                                        new_sent += "{1:SHORTANSWER:=%s}" % right_answer + other
+                                    chosen2 = -1
+                                    for i in err_types:
+                                        if split_sent[i[0]][3]=='Parallel_construction' and split_sent[i[0]][0]==split_sent[chosen][0]:
+                                            continue
+                                        else:
+                                            chosen2 = i[0]
+                                    if chosen2 == -1:
+                                        if self.exclude_repeated:
+                                            continue
+                                        else:
+                                            chosen2 = err_types[1][0]
+                                answers2 = [split_sent[chosen2][0]]
+                    else:
+                        single_error_in_sent = True
+                            # print(chosen, chosen2)
+                    # split_sent = [{'right_answer':i[0],'err_index':i[1],'err_type':i[2],
+                    # 'relation':i[3],'index':i[4],'wrong':i[5].split('>>')[0], 'other':i[5].split('>>')[1]} if len(i)>1 else i for i in split_sent]
+                    # print(chosen, len(split_sent))
+                    for i in range(len(split_sent)):
+                        if not to_skip:
+                            # sent, right_answer, err_type, relation, index, other = split_sent[i],split_sent[i+1],split_sent[i+2],split_sent[i+3],split_sent[i+4],split_sent[i+5]
+                            if type(split_sent[i]) == list:
+                                # right_answer,err_index,index,relation,wrong, other = split_sent[i]['right_answer'],split_sent[i]['err_index'],split_sent[i]['index'],split_sent[i]['relation'],split_sent[i]['wrong'],split_sent[i]['other']
+                                right_answer, err_index, err_type, relation, index, wrong, other = split_sent[i]
+                            else:
+                                new_sent += split_sent[i]
+                                if self.make_two_variants and (ex_type == 'short_answer' or ex_type == 'multiple_choice'):
+                                    new_sent2 += split_sent[i]
+                                continue
+                            # print('/'.join([sent, err_index, right_answer, err_type, relation, index, other]))
+                            # input()
+                            # try:
+                            #     index = int(index)
+                            # except:
+                            #     to_skip = True
+                            #     # print('index: ', index)
+                            #     continue
+                            if ex_type == 'open_cloze' or ex_type == 'word_form':
+                                if ex_type == 'open_cloze':
+                                    new_sent += "{1:SHORTANSWER:=%s}" % right_answer + other
+                                    answers.append(right_answer)
+                                elif ex_type == 'word_form':
+                                    try:
+                                        new_sent += "{1:SHORTANSWER:=%s}" % right_answer + ' (' +\
+                                            self.check_headform(right_answer) + ')' + other
                                         answers.append(right_answer)
-                                    elif ex_type == 'word_form':
-                                        try:
-                                            new_sent += "{1:SHORTANSWER:=%s}" % right_answer + ' (' +\
-                                                self.check_headform(right_answer) + ')' + other
-                                            answers.append(right_answer)
-                                        except:
-                                            new_sent += right_answer + other
+                                    except:
+                                        new_sent += right_answer + other
+                            else:
+                                if i == chosen:
+                                    if self.make_two_variants:
+                                        new_sent2 += right_answer + other
+                                    if ex_type == 'short_answer':
+                                        if self.bold:
+                                            new_sent += '<b>' + wrong + '</b>' + other
+                                        else:
+                                            new_sent += wrong + other
+                                        # print(right_answer)
                                 else:
-                                    if i == chosen:
-                                        right_answer, err_index, err_type, relation, index, wrong, other = split_sent[i]
-                                        if self.make_two_variants:
-                                            new_sent2 += right_answer + other
+                                    if relation == 'Parallel_construction' and right_answer == split_sent[chosen][0]:
                                         if ex_type == 'short_answer':
                                             if self.bold:
                                                 new_sent += '<b>' + wrong + '</b>' + other
                                             else:
                                                 new_sent += wrong + other
-                                            # print(right_answer)
+                                        elif ex_type == 'multiple_choice':
+                                            new_sent += "_______ " + other
                                     else:
-                                        if relation == 'Parallel_construction' and right_answer == split_sent[chosen][0]:
+                                        new_sent += right_answer + other
+                                    if self.make_two_variants:
+                                        if i==chosen2:
                                             if ex_type == 'short_answer':
                                                 if self.bold:
-                                                    new_sent += '<b>' + wrong + '</b>' + other
+                                                    new_sent2 += '<b>' + wrong + '</b>' + other
                                                 else:
-                                                    new_sent += wrong + other
-                                            elif ex_type == 'multiple_choice':
-                                                new_sent += "_______ " + other
+                                                    new_sent2 += wrong + other
+                                                answers2 = [right_answer]
                                         else:
-                                            new_sent += right_answer + other
-                                        if self.make_two_variants:
-                                            if i==chosen2:
+                                            if relation == 'Parallel_construction' and right_answer == split_sent[chosen2][0]:
                                                 if ex_type == 'short_answer':
                                                     if self.bold:
                                                         new_sent2 += '<b>' + wrong + '</b>' + other
                                                     else:
                                                         new_sent2 += wrong + other
-                                                    answers2 = [right_answer]
+                                                elif ex_type == 'multiple_choice':
+                                                    new_sent2 += "_______ " + other
                                             else:
-                                                if relation == 'Parallel_construction' and right_answer == split_sent[chosen2][0]:
-                                                    if ex_type == 'short_answer':
-                                                        if self.bold:
-                                                            new_sent2 += '<b>' + wrong + '</b>' + other
-                                                        else:
-                                                            new_sent2 += wrong + other
-                                                    elif ex_type == 'multiple_choice':
-                                                        new_sent2 += "_______ " + other
-                                                else:
-                                                    new_sent2 += right_answer + other
-                        
-                        # continue    
-                    if self.make_two_variants:  
-                        if ex_type in ('short_answer','multiple_choice'):
-                            if single_error_in_sent:
-                                ## The variable "split_sent" does not exist in
-                                ## context of single error in sentence. However,
-                                ## these variables exist here:
-                                ## right_answer, err_index, err_type, relation, index, wrong
-                                self.c1 += 1
-                                # print(self.c1, self.c2)
-                                # print(var1)
-                                if self.exclude_repeated:
-                                    if lengths[ex_type+'_variant1'] > lengths[ex_type+'_variant2']:
-                                        var1 = False
-                                    elif lengths[ex_type+'_variant1'] < lengths[ex_type+'_variant2']:
-                                        var1 = True
-                                    
-                                    if var1==True:
-                                        build_exercise_text(new_sent, answers, ex_type, 1, single_error_in_sent, err_type)
-                                        if answers and not to_skip:
-                                            lengths[ex_type+'_variant1'] += 1
-                                    else:
-                                        build_exercise_text(new_sent, answers, ex_type, 2, single_error_in_sent, err_type)
-                                        if answers and not to_skip:
-                                            lengths[ex_type+'_variant2'] += 1
-                                else:
-                                    build_exercise_text(new_sent,answers, ex_type, 1, single_error_in_sent, err_type)
-                                    build_exercise_text(new_sent,answers, ex_type, 2, single_error_in_sent, err_type)
-                            else:
-                                self.c2 += 2
-                                # print(self.c1, self.c2)
-                                build_exercise_text(new_sent,answers, ex_type, 1, single_error_in_sent, split_sent[chosen][2])
-                                build_exercise_text(new_sent2,answers2, ex_type, 2, single_error_in_sent, split_sent[chosen2][2])
-                                if not to_skip:
-                                    if answers:
-                                        lengths[ex_type+'_variant1'] += 1
-                                    if answers2:
-                                        lengths[ex_type+'_variant2'] += 1
-                        else:
+                                                new_sent2 += right_answer + other
+                    
+                    # continue    
+                if self.make_two_variants:  
+                    if ex_type in ('short_answer','multiple_choice'):
+                        if single_error_in_sent:
+                            ## The variable "split_sent" does not exist in
+                            ## context of single error in sentence. However,
+                            ## these variables exist here:
+                            ## right_answer, err_index, err_type, relation, index, wrong
                             self.c1 += 1
                             # print(self.c1, self.c2)
+                            # print(var1)
                             if self.exclude_repeated:
                                 if lengths[ex_type+'_variant1'] > lengths[ex_type+'_variant2']:
                                     var1 = False
@@ -989,24 +941,48 @@ class Exercise:
                                     var1 = True
                                 
                                 if var1==True:
-                                    lengths[ex_type+'_variant1'] += 1
-                                    build_exercise_text(new_sent, answers, ex_type, 1, single_error_in_sent)
+                                    build_exercise_text(new_sent, answers, 1, single_error_in_sent, err_type)
+                                    if answers and not to_skip:
+                                        lengths[ex_type+'_variant1'] += 1
                                 else:
-                                    lengths[ex_type+'_variant2'] += 1
-                                    build_exercise_text(new_sent, answers, ex_type, 2, single_error_in_sent)
+                                    build_exercise_text(new_sent, answers, 2, single_error_in_sent, err_type)
+                                    if answers and not to_skip:
+                                        lengths[ex_type+'_variant2'] += 1
                             else:
-                                build_exercise_text(new_sent,answers, ex_type, 1, single_error_in_sent)
-                                build_exercise_text(new_sent,answers, ex_type, 2, single_error_in_sent)            
+                                build_exercise_text(new_sent,answers,1, single_error_in_sent, err_type)
+                                build_exercise_text(new_sent,answers,2, single_error_in_sent, err_type)
+                        else:
+                            self.c2 += 2
+                            # print(self.c1, self.c2)
+                            build_exercise_text(new_sent,answers,1, single_error_in_sent, split_sent[chosen][2])
+                            build_exercise_text(new_sent2,answers2,2, single_error_in_sent, split_sent[chosen2][2])
+                            if not to_skip:
+                                if answers:
+                                    lengths[ex_type+'_variant1'] += 1
+                                if answers2:
+                                    lengths[ex_type+'_variant2'] += 1
                     else:
                         self.c1 += 1
                         # print(self.c1, self.c2)
-                        if sent2.count('<<') == 1:
-                            build_exercise_text(new_sent,answers, ex_type=ex_type, single_question = single_error_in_sent, error_tag = err_type)
-                        else:
-                            if ex_type in ('short_answer', 'multiple_choice'):
-                                build_exercise_text(new_sent,answers,ex_type=ex_type, single_question=single_error_in_sent, error_tag=split_sent[chosen][2])
+                        if self.exclude_repeated:
+                            if lengths[ex_type+'_variant1'] > lengths[ex_type+'_variant2']:
+                                var1 = False
+                            elif lengths[ex_type+'_variant1'] < lengths[ex_type+'_variant2']:
+                                var1 = True
+                            
+                            if var1==True:
+                                lengths[ex_type+'_variant1'] += 1
+                                build_exercise_text(new_sent, answers, 1, single_error_in_sent)
                             else:
-                                build_exercise_text(new_sent,answers,ex_type=ex_type,single_question=single_error_in_sent)
+                                lengths[ex_type+'_variant2'] += 1
+                                build_exercise_text(new_sent, answers, 2, single_error_in_sent)
+                        else:
+                            build_exercise_text(new_sent,answers,1, single_error_in_sent)
+                            build_exercise_text(new_sent,answers,2, single_error_in_sent)            
+                else:
+                    self.c1 += 1
+                    # print(self.c1, self.c2)
+                    build_exercise_text(new_sent,answers, single_question = single_error_in_sent, error_tag = err_type)
         return good_sentences
 
     def write_sh_answ_exercise(self, sentences, ex_type):
@@ -1149,7 +1125,7 @@ class Exercise:
         self.c1 = 0
         self.c2 = 0
         self.c0 = 0 # сколько всего предложений с ошибкой прошло функцию build_exercise_text()
-        for f in tqdm_notebook(list_to_iter, total=len(list_to_iter)):
+        for f in list_to_iter:
             new_text = ''
             if self.use_ram:
                 text_array = f.split('#')
@@ -1211,7 +1187,6 @@ make_two_variants = False, exclude_repeated = False, hier_choice = True):
     e = Exercise(path_to_realecdata = path_to_data, exercise_types = exercise_types, output_path = output_path,
      ann = ann, text = text, error_types = error_types, bold=bold, context=context,mode=mode, maintain_log=maintain_log,
      show_messages=show_messages,use_ram = use_ram,
-     keep_all_exercises=False,
      make_two_variants = make_two_variants,
      exclude_repeated=exclude_repeated, keep_processed = True, hier_choice = hier_choice)
     e.make_data_ready_4exercise()
